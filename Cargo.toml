@@ -1,0 +1,12 @@
+[package]
+name = "brutus"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lazy_static = "1.4.0"
+log = "0.4.20"
+nix = { version = "0.27.1", features = ["term", "process"] }
+page_size = "0.6.0"
+simple_logger = { version = "4.2.0", features = ["threads"] }
+termion = "2.0.1"
