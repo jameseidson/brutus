@@ -1,16 +1,14 @@
 use log::{debug, info};
-use mio::{unix::pipe::Receiver, Events, Interest, Poll, Token};
+use mio::{Events, Interest, Poll, Token};
 use simple_logger::SimpleLogger;
 use std::{
     env,
-    fs::File,
     io::{self, Read},
-    os::fd::FromRawFd,
     str, thread,
 };
 use termion;
 
-use brutus::pty::PseudoTerm;
+use brutus::{common::TermSize, pty};
 
 fn main() {
     SimpleLogger::new().init().unwrap();
@@ -22,11 +20,11 @@ fn main() {
 
     let (cols, rows) = termion::terminal_size().unwrap();
 
-    let pty = PseudoTerm::new(shell_cmd, rows, cols);
+    let ptmx = pty::MasterEnd::open(shell_cmd, TermSize { rows, cols });
+    let (mut sender, mut receiver) = ptmx.split();
 
     thread::spawn(move || {
-        let mut ptm = unsafe { File::from_raw_fd(pty.master) };
-        io::copy(&mut io::stdin(), &mut ptm).unwrap();
+        io::copy(&mut io::stdin(), &mut sender.0).unwrap();
     });
 
     const PTY_RECV: Token = Token(0);
@@ -34,10 +32,8 @@ fn main() {
     let mut poll = Poll::new().unwrap();
     let mut events = Events::with_capacity(1024);
 
-    let mut receiver = unsafe { Receiver::from_raw_fd(pty.master) };
-
     poll.registry()
-        .register(&mut receiver, PTY_RECV, Interest::READABLE)
+        .register(&mut receiver.0, PTY_RECV, Interest::READABLE)
         .unwrap();
 
     let mut buf = [0u8; 256];
@@ -51,7 +47,7 @@ fn main() {
                     return;
                 }
                 PTY_RECV => {
-                    let bytes_read = receiver.read(&mut buf).unwrap();
+                    let bytes_read = receiver.0.read(&mut buf).unwrap();
                     debug!("{:?}", str::from_utf8(&buf[0..bytes_read]).unwrap());
                 }
                 _ => unreachable!(),
