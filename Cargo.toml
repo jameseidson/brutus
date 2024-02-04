@@ -9,3 +9,4 @@ log = "0.4"
 simple_logger = "4.3"
 nix = { version = "0.27", features = ["term", "process"] }
 termion = "3.0"
+kanal = "0.1.0-pre8"
