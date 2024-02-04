@@ -20,11 +20,10 @@ fn main() {
 
     let (cols, rows) = termion::terminal_size().unwrap();
 
-    let ptmx = pty::MasterEnd::open(shell_cmd, TermSize { rows, cols });
-    let (mut sender, mut receiver) = ptmx.split();
+    let mut ptmx = pty::PtyMaster::open(shell_cmd, TermSize { rows, cols });
 
     thread::spawn(move || {
-        io::copy(&mut io::stdin(), &mut sender.0).unwrap();
+        io::copy(&mut io::stdin(), ptmx.sender.borrow_inner_mut()).unwrap();
     });
 
     const PTY_RECV: Token = Token(0);
@@ -33,7 +32,11 @@ fn main() {
     let mut events = Events::with_capacity(1024);
 
     poll.registry()
-        .register(&mut receiver.0, PTY_RECV, Interest::READABLE)
+        .register(
+            ptmx.receiver.borrow_inner_mut(),
+            PTY_RECV,
+            Interest::READABLE,
+        )
         .unwrap();
 
     let mut buf = [0u8; 256];
@@ -47,7 +50,7 @@ fn main() {
                     return;
                 }
                 PTY_RECV => {
-                    let bytes_read = receiver.0.read(&mut buf).unwrap();
+                    let bytes_read = ptmx.receiver.borrow_inner().read(&mut buf).unwrap();
                     debug!("{:?}", str::from_utf8(&buf[0..bytes_read]).unwrap());
                 }
                 _ => unreachable!(),
