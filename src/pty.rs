@@ -1,46 +1,77 @@
-use mio::unix::pipe::{Receiver, Sender};
+use mio::{event, unix::SourceFd, Interest, Registry, Token};
 use nix::{pty, unistd};
 use std::{
-    os::fd::{AsRawFd, FromRawFd, OwnedFd},
+    io::{self, Read, Write},
+    os::fd::{AsRawFd, OwnedFd},
     process,
     sync::Arc,
 };
 
 use crate::common::TermSize;
 
-pub struct PtyMaster {
-    pub sender: FdGuard<Sender>,
-    pub receiver: FdGuard<Receiver>,
-    _fd: Arc<OwnedFd>,
+pub struct Master {
+    pub reader: Reader,
+    pub writer: Writer,
+    #[allow(dead_code)]
+    fd: Arc<OwnedFd>,
 }
 
-impl PtyMaster {
-    pub fn open(cmd: String, size: TermSize) -> Self {
-        let forked = unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap();
+pub fn open(cmd: String, size: TermSize) -> Master {
+    let forked = unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap();
 
-        if let unistd::ForkResult::Child = forked.fork_result {
-            process::Command::new(&cmd).spawn().unwrap().wait().unwrap();
-            process::exit(1);
-        }
+    if let unistd::ForkResult::Child = forked.fork_result {
+        process::Command::new(&cmd).spawn().unwrap().wait().unwrap();
+        process::exit(1);
+    }
 
-        let raw_fd = forked.master.as_raw_fd();
-        let fd = Arc::new(forked.master);
-        PtyMaster {
-            sender: FdGuard(unsafe { Sender::from_raw_fd(raw_fd) }, fd.clone()),
-            receiver: FdGuard(unsafe { Receiver::from_raw_fd(raw_fd) }, fd.clone()),
-            _fd: fd,
-        }
+    let fd = Arc::new(forked.master);
+    Master {
+        reader: Reader(Arc::clone(&fd)),
+        writer: Writer(Arc::clone(&fd)),
+        fd,
     }
 }
 
-pub struct FdGuard<T>(T, Arc<OwnedFd>);
+pub struct Reader(Arc<OwnedFd>);
 
-impl<T> FdGuard<T> {
-    pub fn borrow_inner(&self) -> &T {
-        &self.0
+impl Read for Reader {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        unistd::read(self.0.as_raw_fd(), buf).map_err(io::Error::from)
+    }
+}
+
+impl event::Source for Reader {
+    fn register(
+        &mut self,
+        registry: &Registry,
+        token: Token,
+        interests: Interest,
+    ) -> io::Result<()> {
+        SourceFd(&self.0.as_raw_fd()).register(registry, token, interests)
     }
 
-    pub fn borrow_inner_mut(&mut self) -> &mut T {
-        &mut self.0
+    fn reregister(
+        &mut self,
+        registry: &Registry,
+        token: Token,
+        interests: Interest,
+    ) -> io::Result<()> {
+        SourceFd(&self.0.as_raw_fd()).reregister(registry, token, interests)
+    }
+
+    fn deregister(&mut self, registry: &Registry) -> io::Result<()> {
+        SourceFd(&self.0.as_raw_fd()).deregister(registry)
+    }
+}
+
+pub struct Writer(Arc<OwnedFd>);
+
+impl Write for Writer {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        unistd::write(self.0.as_raw_fd(), buf).map_err(io::Error::from)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }
