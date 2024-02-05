@@ -1,5 +1,9 @@
 use mio::{event, unix::SourceFd, Interest, Registry, Token};
-use nix::{pty, unistd};
+use nix::{
+    pty,
+    sys::termios::{self, InputFlags, SetArg},
+    unistd,
+};
 use std::{
     io::{self, Read, Write},
     os::fd::{AsRawFd, OwnedFd},
@@ -12,7 +16,7 @@ use crate::common::TermSize;
 pub struct Master {
     pub reader: Reader,
     pub writer: Writer,
-    #[allow(dead_code)]
+    #[allow(dead_code)] //TODO: Remove.
     fd: Arc<OwnedFd>,
 }
 
@@ -23,6 +27,10 @@ pub fn open(cmd: String, size: TermSize) -> Master {
         process::Command::new(&cmd).spawn().unwrap().wait().unwrap();
         process::exit(1);
     }
+
+    let mut attrs = termios::tcgetattr(&forked.master).unwrap();
+    attrs.input_flags.set(InputFlags::IUTF8, true);
+    termios::tcsetattr(&forked.master, SetArg::TCSANOW, &attrs).unwrap();
 
     let fd = Arc::new(forked.master);
     Master {
