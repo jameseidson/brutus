@@ -13,14 +13,7 @@ use std::{
 
 use crate::common::TermSize;
 
-pub struct Master {
-    pub reader: Reader,
-    pub writer: Writer,
-    #[allow(dead_code)] //TODO: Remove.
-    fd: Arc<OwnedFd>,
-}
-
-pub fn open(cmd: String, size: TermSize) -> Master {
+pub fn open(cmd: String, size: TermSize) -> (Controller, Reader, Writer) {
     let forked = unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap();
 
     if let unistd::ForkResult::Child = forked.fork_result {
@@ -33,10 +26,19 @@ pub fn open(cmd: String, size: TermSize) -> Master {
     termios::tcsetattr(&forked.master, SetArg::TCSANOW, &attrs).unwrap();
 
     let fd = Arc::new(forked.master);
-    Master {
-        reader: Reader(Arc::clone(&fd)),
-        writer: Writer(Arc::clone(&fd)),
-        fd,
+    (
+        Controller(Arc::clone(&fd)),
+        Reader(Arc::clone(&fd)),
+        Writer(Arc::clone(&fd)),
+    )
+}
+
+pub struct Controller(Arc<OwnedFd>);
+
+impl Controller {
+    pub fn resize(&self) {
+        // TODO: With ioctl.
+        todo!()
     }
 }
 
@@ -44,7 +46,13 @@ pub struct Reader(Arc<OwnedFd>);
 
 impl Read for Reader {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        unistd::read(self.0.as_raw_fd(), buf).map_err(io::Error::from)
+        unistd::read(self.as_raw_fd(), buf).map_err(io::Error::from)
+    }
+}
+
+impl AsRawFd for Reader {
+    fn as_raw_fd(&self) -> std::os::unix::prelude::RawFd {
+        self.0.as_raw_fd()
     }
 }
 
@@ -55,7 +63,7 @@ impl event::Source for Reader {
         token: Token,
         interests: Interest,
     ) -> io::Result<()> {
-        SourceFd(&self.0.as_raw_fd()).register(registry, token, interests)
+        SourceFd(&self.as_raw_fd()).register(registry, token, interests)
     }
 
     fn reregister(
@@ -64,11 +72,11 @@ impl event::Source for Reader {
         token: Token,
         interests: Interest,
     ) -> io::Result<()> {
-        SourceFd(&self.0.as_raw_fd()).reregister(registry, token, interests)
+        SourceFd(&self.as_raw_fd()).reregister(registry, token, interests)
     }
 
     fn deregister(&mut self, registry: &Registry) -> io::Result<()> {
-        SourceFd(&self.0.as_raw_fd()).deregister(registry)
+        SourceFd(&self.as_raw_fd()).deregister(registry)
     }
 }
 
@@ -76,10 +84,16 @@ pub struct Writer(Arc<OwnedFd>);
 
 impl Write for Writer {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        unistd::write(self.0.as_raw_fd(), buf).map_err(io::Error::from)
+        unistd::write(self.as_raw_fd(), buf).map_err(io::Error::from)
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
+    }
+}
+
+impl AsRawFd for Writer {
+    fn as_raw_fd(&self) -> std::os::unix::prelude::RawFd {
+        self.0.as_raw_fd()
     }
 }

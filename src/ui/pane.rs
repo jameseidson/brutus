@@ -1,17 +1,12 @@
 use crate::{common::TermSize, ipc::pty};
 
 pub struct Pane {
-    ptmx: pty::Master,
+    ptmx: pty::Controller,
 }
 
 impl Pane {
-    pub fn new(cmd: String, size: TermSize) -> Self {
-        Self {
-            ptmx: pty::open(cmd, size),
-        }
-    }
-
-    pub fn borrow_io_handles(&mut self) -> (&mut pty::Reader, &mut pty::Writer) {
-        (&mut self.ptmx.reader, &mut self.ptmx.writer)
+    pub fn new(cmd: String, size: TermSize) -> (Self, pty::Reader, pty::Writer) {
+        let (controller, reader, writer) = pty::open(cmd, size);
+        (Self { ptmx: controller }, reader, writer)
     }
 }
