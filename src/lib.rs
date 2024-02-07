@@ -1,3 +1,3 @@
 pub mod common;
-pub mod pty;
+pub mod ipc;
 pub mod ui;
