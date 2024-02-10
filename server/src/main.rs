@@ -7,7 +7,7 @@ use std::{
 };
 use termion;
 
-use brutus::{
+use brutus_server::{
     common::TermSize,
     ipc::{pipe, pty},
     ui,
