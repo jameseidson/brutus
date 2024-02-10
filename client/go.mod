@@ -1,3 +1,3 @@
-module brutus-client
+module github.com/jameseidson/brutus/tree/main/client
 
-go 1.21.6
+go 1.22.0

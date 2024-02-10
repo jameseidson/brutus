@@ -16,7 +16,7 @@ use brutus_server::{
 fn main() {
     SimpleLogger::new().init().unwrap();
 
-    info!("welcome to brutus");
+    info!("running server");
 
     let shell_cmd = env::var("SHELL").unwrap();
     debug!("shell: {}", shell_cmd);
@@ -28,7 +28,7 @@ fn main() {
     let connector = pipe::Connector::<pty::Reader, Stdout, 1>::spawn();
     connector.add_connection(reader, io::stdout()).unwrap();
 
-    thread::spawn(move || io::copy(&mut io::stdin(), &mut writer).unwrap());
+    io::copy(&mut io::stdin(), &mut writer).unwrap();
 
-    loop {}
+    // loop {}
 }
