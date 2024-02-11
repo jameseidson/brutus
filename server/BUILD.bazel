@@ -1,19 +1,11 @@
 load("@crate_index//:defs.bzl", "all_crate_deps")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_static_library")
 
-rust_library(
+rust_static_library(
     name = "brutus-server",
     srcs = glob(
         ["src/**/*.rs"],
-        exclude = ["src/main.rs"],
     ),
-    visibility = ["//visibility:private"],
     deps = all_crate_deps(),
-)
-
-rust_binary(
-    name = "brutus",
-    srcs = ["src/main.rs"],
     visibility = ["//visibility:public"],
-    deps = all_crate_deps() + [":brutus-server"],
 )

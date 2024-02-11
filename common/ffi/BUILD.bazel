@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "ffi",
+    srcs = ["ffi.c"],
+    hdrs = ["ffi.h"],
+    deps = ["//server:brutus-server"],
+    visibility = ["//visibility:public"],
+)

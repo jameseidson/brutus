@@ -1,3 +1,35 @@
+use log::{debug, info};
+use simple_logger::SimpleLogger;
+use std::{
+    env,
+    io::{self, Stdout},
+};
+use termion;
+
 pub mod common;
 pub mod ipc;
 pub mod ui;
+
+use common::TermSize;
+use ipc::{pipe, pty};
+
+#[no_mangle]
+pub extern "C" fn run_server() {
+    SimpleLogger::new().init().unwrap();
+
+    info!("running server");
+
+    let shell_cmd = env::var("SHELL").unwrap();
+    debug!("shell: {}", shell_cmd);
+
+    let (cols, rows) = termion::terminal_size().unwrap();
+
+    let (_, reader, mut writer) = ui::Pane::new(shell_cmd, TermSize { rows, cols });
+
+    let connector = pipe::Connector::<pty::Reader, Stdout, 1>::spawn();
+    connector.add_connection(reader, io::stdout()).unwrap();
+
+    io::copy(&mut io::stdin(), &mut writer).unwrap();
+
+    // loop {}
+}
