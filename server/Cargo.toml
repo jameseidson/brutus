@@ -6,8 +6,9 @@ edition = "2021"
 [dependencies]
 mio = { version = "0.8", features = ["os-ext", "os-poll"] }
 log = "0.4"
-simple_logger = "4.3"
-nix = { version = "0.27", features = ["term", "process", "zerocopy"] }
+simplelog = "0.12"
+nix = { version = "0.27", features = ["term", "user", "process", "zerocopy"] }
 termion = "3.0"
 slab = "0.4"
 kanal = "0.1.0-pre8"
+log-panics = "2.1"

@@ -10,5 +10,10 @@ import "C"
 func main() {
 	slog.Info("hello from brutus client")
 
-	C.run_server()
+	a := C.spawn_server_daemon()
+
+	println("yo me gusta: ", a)
+	// slog.Debug("pid from server: ", a)
+	for {
+	}
 }

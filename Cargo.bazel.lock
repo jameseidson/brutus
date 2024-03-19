@@ -1,5 +1,5 @@
 {
-  "checksum": "85e0716a8453a7a7410e04dfa819430881b96641ae3c737e4ce341694167135d",
+  "checksum": "94a36d77b7bbe206be89bafb5cda963ee58cc61550cc506d002f33c0a2e94c5d",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -122,6 +122,10 @@
               "target": "log"
             },
             {
+              "id": "log-panics 2.1.0",
+              "target": "log_panics"
+            },
+            {
               "id": "mio 0.8.10",
               "target": "mio"
             },
@@ -130,8 +134,8 @@
               "target": "nix"
             },
             {
-              "id": "simple_logger 4.3.3",
-              "target": "simple_logger"
+              "id": "simplelog 0.12.1",
+              "target": "simplelog"
             },
             {
               "id": "slab 0.4.9",
@@ -178,52 +182,6 @@
         "version": "1.0.0"
       },
       "license": "MIT/Apache-2.0"
-    },
-    "colored 2.1.0": {
-      "name": "colored",
-      "version": "2.1.0",
-      "repository": {
-        "Http": {
-          "url": "https://crates.io/api/v1/crates/colored/2.1.0/download",
-          "sha256": "cbf2150cce219b664a8a70df7a1f933836724b503f8a413af9365b4dcc4d90b8"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "colored",
-            "crate_root": "src/lib.rs",
-            "srcs": [
-              "**/*.rs"
-            ]
-          }
-        }
-      ],
-      "library_target_name": "colored",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "lazy_static 1.4.0",
-              "target": "lazy_static"
-            }
-          ],
-          "selects": {
-            "cfg(windows)": [
-              {
-                "id": "windows-sys 0.48.0",
-                "target": "windows_sys"
-              }
-            ]
-          }
-        },
-        "edition": "2021",
-        "version": "2.1.0"
-      },
-      "license": "MPL-2.0"
     },
     "deranged 0.3.11": {
       "name": "deranged",
@@ -390,36 +348,6 @@
         "version": "0.1.0-pre8"
       },
       "license": "MIT"
-    },
-    "lazy_static 1.4.0": {
-      "name": "lazy_static",
-      "version": "1.4.0",
-      "repository": {
-        "Http": {
-          "url": "https://crates.io/api/v1/crates/lazy_static/1.4.0/download",
-          "sha256": "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "lazy_static",
-            "crate_root": "src/lib.rs",
-            "srcs": [
-              "**/*.rs"
-            ]
-          }
-        }
-      ],
-      "library_target_name": "lazy_static",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "edition": "2015",
-        "version": "1.4.0"
-      },
-      "license": "MIT/Apache-2.0"
     },
     "libc 0.2.153": {
       "name": "libc",
@@ -638,6 +566,45 @@
       },
       "license": "MIT OR Apache-2.0"
     },
+    "log-panics 2.1.0": {
+      "name": "log-panics",
+      "version": "2.1.0",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/log-panics/2.1.0/download",
+          "sha256": "68f9dd8546191c1850ecf67d22f5ff00a935b890d0e84713159a55495cc2ac5f"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "log_panics",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "log_panics",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "log 0.4.20",
+              "target": "log"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2015",
+        "version": "2.1.0"
+      },
+      "license": "MIT/Apache-2.0"
+    },
     "mio 0.8.10": {
       "name": "mio",
       "version": "0.8.10",
@@ -737,10 +704,12 @@
         "crate_features": {
           "common": [
             "default",
+            "feature",
             "fs",
             "process",
             "term",
             "uio",
+            "user",
             "zerocopy"
           ],
           "selects": {}
@@ -1210,19 +1179,19 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "simple_logger 4.3.3": {
-      "name": "simple_logger",
-      "version": "4.3.3",
+    "simplelog 0.12.1": {
+      "name": "simplelog",
+      "version": "0.12.1",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/simple_logger/4.3.3/download",
-          "sha256": "8e7e46c8c90251d47d08b28b8a419ffb4aede0f87c2eea95e17d1d5bacbf3ef1"
+          "url": "https://crates.io/api/v1/crates/simplelog/0.12.1/download",
+          "sha256": "acee08041c5de3d5048c8b3f6f13fafb3026b24ba43c6a695a0c76179b844369"
         }
       },
       "targets": [
         {
           "Library": {
-            "crate_name": "simple_logger",
+            "crate_name": "simplelog",
             "crate_root": "src/lib.rs",
             "srcs": [
               "**/*.rs"
@@ -1230,49 +1199,40 @@
           }
         }
       ],
-      "library_target_name": "simple_logger",
+      "library_target_name": "simplelog",
       "common_attrs": {
         "compile_data_glob": [
           "**"
         ],
         "crate_features": {
           "common": [
-            "colored",
-            "colors",
             "default",
-            "time",
-            "timestamps"
+            "local-offset",
+            "termcolor"
           ],
           "selects": {}
         },
         "deps": {
           "common": [
             {
-              "id": "colored 2.1.0",
-              "target": "colored"
-            },
-            {
               "id": "log 0.4.20",
               "target": "log"
+            },
+            {
+              "id": "termcolor 1.1.3",
+              "target": "termcolor"
             },
             {
               "id": "time 0.3.34",
               "target": "time"
             }
           ],
-          "selects": {
-            "cfg(windows)": [
-              {
-                "id": "windows-sys 0.48.0",
-                "target": "windows_sys"
-              }
-            ]
-          }
+          "selects": {}
         },
         "edition": "2018",
-        "version": "4.3.3"
+        "version": "0.12.1"
       },
-      "license": "MIT"
+      "license": "MIT OR Apache-2.0"
     },
     "slab 0.4.9": {
       "name": "slab",
@@ -1389,6 +1349,47 @@
         "version": "2.0.48"
       },
       "license": "MIT OR Apache-2.0"
+    },
+    "termcolor 1.1.3": {
+      "name": "termcolor",
+      "version": "1.1.3",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/termcolor/1.1.3/download",
+          "sha256": "bab24d30b911b2376f3a13cc2cd443142f0c81dda04c118693e35b3835757755"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "termcolor",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "termcolor",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [],
+          "selects": {
+            "cfg(windows)": [
+              {
+                "id": "winapi-util 0.1.6",
+                "target": "winapi_util"
+              }
+            ]
+          }
+        },
+        "edition": "2018",
+        "version": "1.1.3"
+      },
+      "license": "Unlicense OR MIT"
     },
     "termion 3.0.0": {
       "name": "termion",
@@ -1678,6 +1679,235 @@
       },
       "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"
     },
+    "winapi 0.3.9": {
+      "name": "winapi",
+      "version": "0.3.9",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/winapi/0.3.9/download",
+          "sha256": "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "winapi",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "winapi",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "consoleapi",
+            "errhandlingapi",
+            "fileapi",
+            "minwindef",
+            "processenv",
+            "std",
+            "sysinfoapi",
+            "winbase",
+            "wincon",
+            "winerror",
+            "winnt"
+          ],
+          "selects": {}
+        },
+        "deps": {
+          "common": [
+            {
+              "id": "winapi 0.3.9",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {
+            "i686-pc-windows-gnu": [
+              {
+                "id": "winapi-i686-pc-windows-gnu 0.4.0",
+                "target": "winapi_i686_pc_windows_gnu"
+              }
+            ],
+            "x86_64-pc-windows-gnu": [
+              {
+                "id": "winapi-x86_64-pc-windows-gnu 0.4.0",
+                "target": "winapi_x86_64_pc_windows_gnu"
+              }
+            ]
+          }
+        },
+        "edition": "2015",
+        "version": "0.3.9"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ]
+      },
+      "license": "MIT/Apache-2.0"
+    },
+    "winapi-i686-pc-windows-gnu 0.4.0": {
+      "name": "winapi-i686-pc-windows-gnu",
+      "version": "0.4.0",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/winapi-i686-pc-windows-gnu/0.4.0/download",
+          "sha256": "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "winapi_i686_pc_windows_gnu",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "winapi_i686_pc_windows_gnu",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "winapi-i686-pc-windows-gnu 0.4.0",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2015",
+        "version": "0.4.0"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ]
+      },
+      "license": "MIT/Apache-2.0"
+    },
+    "winapi-util 0.1.6": {
+      "name": "winapi-util",
+      "version": "0.1.6",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/winapi-util/0.1.6/download",
+          "sha256": "f29e6f9198ba0d26b4c9f07dbe6f9ed633e1f3d5b8b414090084349e46a52596"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "winapi_util",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "winapi_util",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [],
+          "selects": {
+            "cfg(windows)": [
+              {
+                "id": "winapi 0.3.9",
+                "target": "winapi"
+              }
+            ]
+          }
+        },
+        "edition": "2021",
+        "version": "0.1.6"
+      },
+      "license": "Unlicense/MIT"
+    },
+    "winapi-x86_64-pc-windows-gnu 0.4.0": {
+      "name": "winapi-x86_64-pc-windows-gnu",
+      "version": "0.4.0",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/winapi-x86_64-pc-windows-gnu/0.4.0/download",
+          "sha256": "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "winapi_x86_64_pc_windows_gnu",
+            "crate_root": "src/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "winapi_x86_64_pc_windows_gnu",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "winapi-x86_64-pc-windows-gnu 0.4.0",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2015",
+        "version": "0.4.0"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ]
+      },
+      "license": "MIT/Apache-2.0"
+    },
     "windows-sys 0.48.0": {
       "name": "windows-sys",
       "version": "0.48.0",
@@ -1713,7 +1943,6 @@
             "Win32_Storage",
             "Win32_Storage_FileSystem",
             "Win32_System",
-            "Win32_System_Console",
             "Win32_System_IO",
             "Win32_System_Pipes",
             "Win32_System_WindowsProgramming",
@@ -2356,6 +2585,7 @@
     "i686-linux-android": [
       "i686-linux-android"
     ],
+    "i686-pc-windows-gnu": [],
     "i686-pc-windows-msvc": [
       "i686-pc-windows-msvc"
     ],
@@ -2401,6 +2631,7 @@
     "x86_64-linux-android": [
       "x86_64-linux-android"
     ],
+    "x86_64-pc-windows-gnu": [],
     "x86_64-pc-windows-gnullvm": [],
     "x86_64-pc-windows-msvc": [
       "x86_64-pc-windows-msvc"
@@ -2421,9 +2652,10 @@
   "direct_deps": [
     "kanal 0.1.0-pre8",
     "log 0.4.20",
+    "log-panics 2.1.0",
     "mio 0.8.10",
     "nix 0.27.1",
-    "simple_logger 4.3.3",
+    "simplelog 0.12.1",
     "slab 0.4.9",
     "termion 3.0.0"
   ],
