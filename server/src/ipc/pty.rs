@@ -14,23 +14,24 @@ use std::{
 use crate::common::TermSize;
 
 pub fn open(cmd: String, size: TermSize) -> (Controller, Reader, Writer) {
-    let forked = unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap();
+    match unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap() {
+        pty::ForkptyResult::Child => {
+            process::Command::new(&cmd).spawn().unwrap().wait().unwrap();
+            process::exit(1);
+        }
+        pty::ForkptyResult::Parent { master, .. } => {
+            let mut attrs = termios::tcgetattr(&master).unwrap();
+            attrs.input_flags.set(InputFlags::IUTF8, true);
+            termios::tcsetattr(&master, SetArg::TCSANOW, &attrs).unwrap();
 
-    if let unistd::ForkResult::Child = forked.fork_result {
-        process::Command::new(&cmd).spawn().unwrap().wait().unwrap();
-        process::exit(1);
+            let fd = Arc::new(master);
+            (
+                Controller(Arc::clone(&fd)),
+                Reader(Arc::clone(&fd)),
+                Writer(Arc::clone(&fd)),
+            )
+        }
     }
-
-    let mut attrs = termios::tcgetattr(&forked.master).unwrap();
-    attrs.input_flags.set(InputFlags::IUTF8, true);
-    termios::tcsetattr(&forked.master, SetArg::TCSANOW, &attrs).unwrap();
-
-    let fd = Arc::new(forked.master);
-    (
-        Controller(Arc::clone(&fd)),
-        Reader(Arc::clone(&fd)),
-        Writer(Arc::clone(&fd)),
-    )
 }
 
 pub struct Controller(Arc<OwnedFd>);
@@ -84,7 +85,7 @@ pub struct Writer(Arc<OwnedFd>);
 
 impl Write for Writer {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        unistd::write(self.as_raw_fd(), buf).map_err(io::Error::from)
+        unistd::write(&self.0, buf).map_err(io::Error::from)
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
