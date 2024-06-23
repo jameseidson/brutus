@@ -1,12 +1,20 @@
 module(name = "brutus")
 
-bazel_dep(name = "rules_rust", version = "0.38.0")
+bazel_dep(name = "rules_rust", version = "0.46.0")
+bazel_dep(name = "rules_go", version = "0.48.1")
+bazel_dep(name = "gazelle", version = "0.37.0")
+
+register_toolchains("@rust_toolchains//:all")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(edition = "2021")
 
-bazel_dep(name = "rules_go", version = "0.45.1")
-bazel_dep(name = "gazelle", version = "0.35.0")
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = ["//:Cargo.toml"],
+)
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(version = "1.22.0")
@@ -14,6 +22,11 @@ go_sdk.download(version = "1.22.0")
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//client:go.mod")
 
+use_repo(
+    rust,
+    "rust_toolchains",
+)
+use_repo(crate, "crates")
 use_repo(
     go_deps,
 )

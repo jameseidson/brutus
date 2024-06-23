@@ -15,8 +15,8 @@ where
     W: Write + AsRawFd + Send + 'static,
 {
     waker: Waker,
-    wake_reason: Sender<WakeReason<R, W>>,
-    wake_response: Receiver<ConnectionId>,
+    sender: Sender<WakeReason<R, W>>,
+    receiever: Receiver<ConnectionId>,
 }
 
 impl<R, W, const N: usize> Connector<R, W, N>
@@ -38,15 +38,15 @@ where
 
         Self {
             waker,
-            wake_reason: wake_reason_sender,
-            wake_response: wake_response_receiver,
+            sender: wake_reason_sender,
+            receiever: wake_response_receiver,
         }
     }
 
     pub fn add_connection(&self, reader: R, writer: W) -> io::Result<ConnectionId> {
         self.wake_for_reason(WakeReason::AddConnection(reader, writer))?;
 
-        self.wake_response
+        self.receiever
             .recv()
             .map_err(|err| io::Error::new(io::ErrorKind::BrokenPipe, err))
     }
@@ -56,7 +56,7 @@ where
     }
 
     fn wake_for_reason(&self, reason: WakeReason<R, W>) -> io::Result<()> {
-        self.wake_reason
+        self.sender
             .send(reason)
             .map_err(|err| io::Error::new(io::ErrorKind::BrokenPipe, err))?;
 
@@ -67,8 +67,8 @@ where
 
     fn polling_thread(
         mut poll: Poll,
-        wake_reason: Receiver<WakeReason<R, W>>,
-        wake_response: Sender<ConnectionId>,
+        receiver: Receiver<WakeReason<R, W>>,
+        sender: Sender<ConnectionId>,
     ) {
         let mut events = Events::with_capacity(1024);
         let mut connections = Slab::<(R, W)>::with_capacity(N);
@@ -79,7 +79,7 @@ where
 
             for event in &events {
                 match event.token() {
-                    Self::WAKE_TOKEN => match wake_reason.recv().unwrap() {
+                    Self::WAKE_TOKEN => match receiver.recv().unwrap() {
                         WakeReason::AddConnection(reader, writer) => {
                             let id = Self::handle_add_connection(
                                 reader,
@@ -88,7 +88,7 @@ where
                                 &mut poll,
                             )
                             .unwrap();
-                            wake_response.send(id).unwrap();
+                            sender.send(id).unwrap();
                         }
                         WakeReason::RemoveConnection(id) => {
                             Self::handle_remove_connection(id, &mut connections, &mut poll).unwrap()

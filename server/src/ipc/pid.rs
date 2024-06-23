@@ -1,20 +1,21 @@
 use core::fmt;
 use log::debug;
 use nix::{
-    fcntl::{flock, FlockArg},
+    fcntl::{Flock, FlockArg},
     unistd::geteuid,
 };
 use std::{
     fs::{remove_file, File, OpenOptions},
     io::{self, ErrorKind, Read, Write},
     mem::{self, ManuallyDrop},
-    os::fd::AsRawFd,
+    ops::Deref,
     path::{Path, PathBuf},
     process,
 };
 
 const PID_FILE_DIR: &'static str = "/var/run/user";
 
+#[derive(Debug)]
 pub struct Pid(u32);
 
 impl Pid {
@@ -58,35 +59,39 @@ impl SingletonProcessHandle {
     /// `Singleton` owns a `PidFile` which will exclude other identical processes for as long as it lives.
     /// `AlreadyRunning` provides the pid of the already running singleton process.
     pub fn new(name: String) -> io::Result<Self> {
-        let pid_file_path = Path::new(PID_FILE_DIR)
+        let path = Path::new(PID_FILE_DIR)
             .join(geteuid().to_string())
             .join(name + ".pid");
 
-        match PidFile::new(&pid_file_path) {
-            Ok(pid_file) => {
+        match PidFile::new(&path) {
+            Ok(file) => {
                 debug!("created pid file");
-                Ok(Self::TheSingleton(pid_file))
+                Ok(Self::TheSingleton(file))
             }
-            Err(PidFileError::AlreadyLocked) => Ok(Self::AlreadyRunning(
-                PidFile::read_pid_from_file(pid_file_path)?,
-            )),
-            Err(PidFileError::IoError(err)) => Err(err),
+            Err(err) => {
+                if let io::ErrorKind::WouldBlock = err.kind() {
+                    PidFile::read_pid_from_file(path).map(Self::AlreadyRunning)
+                } else {
+                    Err(err)
+                }
+            }
         }
     }
 }
 
-/// A handle to a .pid file. The file is closed and removed on `drop`.
+/// A handle to a .pid file. The file is unlocked and removed on `drop`.
 ///
-/// This API closeley matches [https://man.freebsd.org/cgi/man.cgi?query=pidfile](https://man.freebsd.org/cgi/man.cgi?query=pidfile)
-/// The implementation differs from BSD's, however, to allow for concurrent reads by client processes.
+/// This API is similar to BSD's [https://man.freebsd.org/cgi/man.cgi?query=pidfile](https://man.freebsd.org/cgi/man.cgi?query=pidfile)
+/// with some differences to allow for reads by client processes.
 pub struct PidFile {
     path: ManuallyDrop<PathBuf>,
-    file: ManuallyDrop<File>,
+    file: ManuallyDrop<Flock<File>>,
 }
 
 impl PidFile {
-    /// Open a new pid file if it isn't already claimed by another process.
-    pub fn new(path: impl Into<PathBuf>) -> Result<PidFile, PidFileError> {
+    /// Open a new pid file if it isn't already locked by another process. This acquires an
+    /// exclusive lock on the file.
+    pub fn new(path: impl Into<PathBuf>) -> io::Result<PidFile> {
         let path: PathBuf = path.into();
 
         let file = OpenOptions::new()
@@ -95,42 +100,31 @@ impl PidFile {
             .create(true)
             .truncate(false)
             .open(&path)
-            .map_err(PidFileError::IoError)?;
-
-        // Temporarily take the exclusive lock until our pid is written.
-        flock(file.as_raw_fd(), FlockArg::LockExclusiveNonblock).map_err(|err| {
-            let io_err = io::Error::from(err);
-            if io_err.kind() == ErrorKind::WouldBlock {
-                PidFileError::AlreadyLocked
-            } else {
-                PidFileError::IoError(io_err)
-            }
-        })?;
-
-        file.set_len(0).map_err(PidFileError::IoError)?;
+            .map_err(io::Error::from)?;
 
         Ok(PidFile {
             path: ManuallyDrop::new(path),
-            file: ManuallyDrop::new(file),
+            file: ManuallyDrop::new(
+                Flock::lock(file, FlockArg::LockExclusiveNonblock)
+                    .map_err(|(_, errno)| io::Error::from(errno))?,
+            ),
         })
     }
 
-    /// Write the current process' id to the pid file in native endian binary.
+    /// Write the current process' id to the pid file in native endian binary and convert
+    /// The held lock to shared. This will allow clients to read our pid from the file but
+    /// prevent them from taking exclusive ownership of it.
     pub fn write_my_pid(&mut self) -> io::Result<()> {
-        let file: &File = &self.file;
-        Pid::get_mine().write_to(file)?;
+        Pid::get_mine().write_to(self.file.deref().deref())?;
 
-        // Convert our lock to shared. This will prevent other servers from opening the file as they
-        // must furst acquire the exclusive lock, but will allow any number of clients to read from
-        // it.
-        flock(file.as_raw_fd(), FlockArg::LockSharedNonblock).map_err(io::Error::from)?;
+        self.file
+            .relock(FlockArg::LockSharedNonblock)
+            .map_err(io::Error::from)?;
 
         Ok(())
     }
 
     /// Read the pid contained within the file. Blocks until a shared lock can be taken.
-    ///
-    /// This function is intended to be called by a process that does not own the `PidFile`.
     pub fn read_pid_from_file(path: impl Into<PathBuf>) -> io::Result<Pid> {
         debug!("reading pid from file");
         let file = OpenOptions::new()
@@ -139,23 +133,26 @@ impl PidFile {
             .create(false)
             .open(&path.into())?;
 
-        flock(file.as_raw_fd(), FlockArg::LockShared).map_err(io::Error::from)?;
-
-        Pid::read_from(file)
+        match Flock::lock(file, FlockArg::LockShared) {
+            Ok(file) => Pid::read_from(file.deref()),
+            Err((_, err)) => Err(io::Error::from(err)),
+        }
     }
 
-    /// Close the pid file without removing it.
+    /// Drop the pid file without unlocking or deleting it.
     ///
     /// Creating a `PidFile` and then calling `fork` will allow both the child and parent process
     /// to obtain unique descriptors for the same file on disk and therefore share the same
     /// exclusive lock. The lock will not be released until both file descriptors have been closed,
-    /// so this function is provided to safely close one of the descriptors without deleting the
+    /// so this function is necessary to safely drop one of the descriptors without unlocking the
     /// file.
-    pub fn close(mut self) {
-        debug!("closing pid file without removing it");
+    pub fn drop_without_unlocking(mut self) {
+        debug!(
+            "closing pid file without unlocking it in process {}",
+            process::id()
+        );
         unsafe {
             ManuallyDrop::<PathBuf>::drop(&mut self.path);
-            ManuallyDrop::<File>::drop(&mut self.file);
         }
         mem::forget(self)
     }
@@ -163,21 +160,7 @@ impl PidFile {
 
 impl Drop for PidFile {
     fn drop(&mut self) {
-        debug!("calling drop in process: {}", process::id());
+        debug!("calling drop in process {}", process::id());
         let _ = remove_file(self.path.as_path());
-    }
-}
-
-pub enum PidFileError {
-    AlreadyLocked,
-    IoError(io::Error),
-}
-
-impl fmt::Display for PidFileError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::AlreadyLocked => write!(f, "pid file was already locked"),
-            Self::IoError(err) => err.fmt(f),
-        }
     }
 }
