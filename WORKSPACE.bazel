@@ -1,3 +1,11 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_rust",
+    integrity = "sha256-F8U7+AC5MvMtPKGdLLnorVM84cDXKfDRgwd7/dq3rUY=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.46.0/rules_rust-v0.46.0.tar.gz"],
+)
+
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 
 rules_rust_dependencies()
@@ -23,3 +31,116 @@ crates_repository(
 load("@crate_index//:defs.bzl", "crate_repositories")
 
 crate_repositories()
+
+http_archive(
+    name = "io_bazel_rules_go",
+    integrity = "sha256-fHbWI2so/2laoozzX5XeMXqUcv0fsUrHl8m/aE8Js3w=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.44.2/rules_go-v0.44.2.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.44.2/rules_go-v0.44.2.zip",
+    ],
+)
+
+http_archive(
+    name = "bazel_gazelle",
+    integrity = "sha256-MpOL2hbmcABjA1R5Bj2dJMYO2o15/Uc5Vj9Q0zHLMgk=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.22.4")
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+
+go_repository(
+    name = "com_github_colega_zeropool",
+    importpath = "github.com/colega/zeropool",
+    sum = "h1:d5EKgQfRQvO97jnISfR89AiCCCJMwMFoSxUiU0OGCRU=",
+    version = "v0.0.0-20230505084239-6fb4a4f75381",
+)
+
+go_repository(
+    name = "com_github_davecgh_go_spew",
+    importpath = "github.com/davecgh/go-spew",
+    sum = "h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=",
+    version = "v1.1.1",
+)
+
+go_repository(
+    name = "com_github_kylelemons_godebug",
+    importpath = "github.com/kylelemons/godebug",
+    sum = "h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=",
+    version = "v1.1.0",
+)
+
+go_repository(
+    name = "com_github_philhofer_fwd",
+    importpath = "github.com/philhofer/fwd",
+    sum = "h1:GdGcTjf5RNAxwS4QLsiMzJYj5KEvPJD3Abr261yRQXQ=",
+    version = "v1.1.1",
+)
+
+go_repository(
+    name = "com_github_pmezard_go_difflib",
+    importpath = "github.com/pmezard/go-difflib",
+    sum = "h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=",
+    version = "v1.0.0",
+)
+
+go_repository(
+    name = "com_github_stretchr_testify",
+    importpath = "github.com/stretchr/testify",
+    sum = "h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=",
+    version = "v1.8.2",
+)
+
+go_repository(
+    name = "com_github_tinylib_msgp",
+    importpath = "github.com/tinylib/msgp",
+    sum = "h1:2gXmtWueD2HefZHQe1QOy9HVzmFrLOVvsXwXBQ0ayy0=",
+    version = "v1.1.5",
+)
+
+go_repository(
+    name = "com_github_tj_assert",
+    importpath = "github.com/tj/assert",
+    sum = "h1:Df/BlaZ20mq6kuai7f5z2TvPFiwC3xaWJSDQNiIS3Rk=",
+    version = "v0.0.3",
+)
+
+go_repository(
+    name = "in_gopkg_yaml_v3",
+    importpath = "gopkg.in/yaml.v3",
+    sum = "h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=",
+    version = "v3.0.1",
+)
+
+go_repository(
+    name = "org_capnproto_go_capnp_v3",
+    importpath = "capnproto.org/go/capnp/v3",
+    patches = ["org_capnproto_go_capnp_v3.patch"],
+    sum = "h1:hYEclwXEKsnu+PdHASdx3nLP0fC9kZnR+x1CEvMp9ck=",
+    version = "v3.0.1-alpha.1",
+)
+
+go_repository(
+    name = "org_golang_x_exp",
+    importpath = "golang.org/x/exp",
+    sum = "h1:GoHiUyI/Tp2nVkLI2mCxVkOjsbSXD66ic0XW0js0R9g=",
+    version = "v0.0.0-20230905200255-921286631fa9",
+)
+
+go_repository(
+    name = "org_golang_x_sync",
+    importpath = "golang.org/x/sync",
+    sum = "h1:SQFwaSi55rU7vdNs9Yr0Z324VNlrF+0wMqRXT4St8ck=",
+    version = "v0.0.0-20201020160332-67f06af15bc9",
+)
+
+gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")

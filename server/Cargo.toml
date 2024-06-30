@@ -1,5 +1,5 @@
 [package]
-name = "brutus-server"
+name = "server"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,7 @@ termion = "3.0"
 slab = "0.4"
 kanal = "0.1.0-pre8"
 log-panics = "2.1"
+capnp = "0.19"
+
+[build-dependencies]
+capnpc = "0.19"

@@ -1,5 +1,5 @@
 {
-  "checksum": "ec5a07cf077c4e80aaf6c342c54b4c85b7366b6856bfee0c69b674193167e75a",
+  "checksum": "75d40c93dbeb6255cf139981c102a78630048025de718c235c17e3c9e159be8e",
   "crates": {
     "autocfg 1.3.0": {
       "name": "autocfg",
@@ -118,15 +118,20 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "brutus-server 0.1.0": {
-      "name": "brutus-server",
-      "version": "0.1.0",
-      "package_url": null,
-      "repository": null,
+    "capnp 0.19.6": {
+      "name": "capnp",
+      "version": "0.19.6",
+      "package_url": "https://github.com/capnproto/capnproto-rust",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/capnp/0.19.6/download",
+          "sha256": "de71387912cac7dd3cb7c219e09628411620a18061bba58c71453c26ae7bf66a"
+        }
+      },
       "targets": [
         {
           "Library": {
-            "crate_name": "brutus_server",
+            "crate_name": "capnp",
             "crate_root": "src/lib.rs",
             "srcs": {
               "allow_empty": false,
@@ -137,7 +142,53 @@
           }
         }
       ],
-      "library_target_name": "brutus_server",
+      "library_target_name": "capnp",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.19.6"
+      },
+      "license": "MIT",
+      "license_ids": [
+        "MIT"
+      ],
+      "license_file": "LICENSE"
+    },
+    "capnpc 0.19.0": {
+      "name": "capnpc",
+      "version": "0.19.0",
+      "package_url": "https://github.com/capnproto/capnproto-rust",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/capnpc/0.19.0/download",
+          "sha256": "c75ba30e0f08582d53c2f3710cf4bb65ff562614b1ba86906d7391adffe189ec"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "capnpc",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "capnpc",
       "common_attrs": {
         "compile_data_glob": [
           "**"
@@ -145,46 +196,20 @@
         "deps": {
           "common": [
             {
-              "id": "kanal 0.1.0-pre8",
-              "target": "kanal"
-            },
-            {
-              "id": "log 0.4.21",
-              "target": "log"
-            },
-            {
-              "id": "log-panics 2.1.0",
-              "target": "log_panics"
-            },
-            {
-              "id": "mio 1.0.0",
-              "target": "mio"
-            },
-            {
-              "id": "nix 0.29.0",
-              "target": "nix"
-            },
-            {
-              "id": "simplelog 0.12.2",
-              "target": "simplelog"
-            },
-            {
-              "id": "slab 0.4.9",
-              "target": "slab"
-            },
-            {
-              "id": "termion 3.0.0",
-              "target": "termion"
+              "id": "capnp 0.19.6",
+              "target": "capnp"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.1.0"
+        "version": "0.19.0"
       },
-      "license": null,
-      "license_ids": [],
-      "license_file": null
+      "license": "MIT",
+      "license_ids": [
+        "MIT"
+      ],
+      "license_file": "LICENSE"
     },
     "cfg-if 1.0.0": {
       "name": "cfg-if",
@@ -318,6 +343,45 @@
         "MIT"
       ],
       "license_file": "LICENSE-Apache"
+    },
+    "embedded-io 0.6.1": {
+      "name": "embedded-io",
+      "version": "0.6.1",
+      "package_url": "https://github.com/rust-embedded/embedded-hal",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/embedded-io/0.6.1/download",
+          "sha256": "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "embedded_io",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "embedded_io",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "edition": "2021",
+        "version": "0.6.1"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
     },
     "futures-core 0.3.30": {
       "name": "futures-core",
@@ -1538,6 +1602,108 @@
         "MIT"
       ],
       "license_file": "LICENSE-APACHE"
+    },
+    "server 0.1.0": {
+      "name": "server",
+      "version": "0.1.0",
+      "package_url": null,
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "server",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "server",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "capnp 0.19.6",
+              "target": "capnp"
+            },
+            {
+              "id": "kanal 0.1.0-pre8",
+              "target": "kanal"
+            },
+            {
+              "id": "log 0.4.21",
+              "target": "log"
+            },
+            {
+              "id": "log-panics 2.1.0",
+              "target": "log_panics"
+            },
+            {
+              "id": "mio 1.0.0",
+              "target": "mio"
+            },
+            {
+              "id": "nix 0.29.0",
+              "target": "nix"
+            },
+            {
+              "id": "server 0.1.0",
+              "target": "build_script_build"
+            },
+            {
+              "id": "simplelog 0.12.2",
+              "target": "simplelog"
+            },
+            {
+              "id": "slab 0.4.9",
+              "target": "slab"
+            },
+            {
+              "id": "termion 3.0.0",
+              "target": "termion"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.1.0"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "capnpc 0.19.0",
+              "target": "capnpc"
+            }
+          ],
+          "selects": {}
+        }
+      },
+      "license": null,
+      "license_ids": [],
+      "license_file": null
     },
     "simplelog 0.12.2": {
       "name": "simplelog",
@@ -3095,7 +3261,7 @@
   },
   "binary_crates": [],
   "workspace_members": {
-    "brutus-server 0.1.0": "server"
+    "server 0.1.0": "server"
   },
   "conditions": {
     "aarch64-apple-darwin": [
@@ -3306,6 +3472,8 @@
     ]
   },
   "direct_deps": [
+    "capnp 0.19.6",
+    "capnpc 0.19.0",
     "kanal 0.1.0-pre8",
     "log 0.4.21",
     "log-panics 2.1.0",

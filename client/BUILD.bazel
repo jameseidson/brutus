@@ -1,16 +1,29 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
+    name = "brutus",
+    embed = [":lib"],
+    visibility = ["//visibility:public"],
+)
 
 go_library(
-    name = "brutus-client",
+    name = "lib",
     srcs = ["main.go"],
+    embedsrcs = ["proto.capnp.go"],
     cdeps = ["//common/ffi:ffi"],
     cgo = True,
     importpath = "github.com/jameseidson/brutus/tree/main/client/client",
     visibility = ["//visibility:private"],
 )
 
-go_binary(
-    name = "brutus",
-    embed = [":brutus-client"],
-    visibility = ["//visibility:public"],
+genrule(
+    name = "proto",
+    srcs = [
+        "//common/proto:proto",
+        "@org_capnproto_go_capnp_v3//:std",
+        "@org_capnproto_go_capnp_v3//capnpc-go:capnpc-go",
+    ],
+    outs = ["proto.capnp.go"],
+    cmd = "capnp compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //common/proto:proto)",
+    visibility = ["//visibility:private"],
 )

@@ -1,4 +1,10 @@
-load("@gazelle//:def.bzl", "gazelle")
+load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/jameseidson/brutus/tree/main/client
 gazelle(name = "gazelle")
+
+alias(
+    name = "brutus",
+    actual = "//client:brutus",
+    visibility = ["//visibility:public"],
+)

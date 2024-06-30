@@ -17,6 +17,7 @@ use std::{
 
 pub mod common;
 pub mod ipc;
+pub mod proto_capnp;
 pub mod ui;
 
 use common::TermSize;

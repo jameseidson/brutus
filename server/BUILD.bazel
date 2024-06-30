@@ -1,11 +1,26 @@
 load("@crate_index//:defs.bzl", "all_crate_deps")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_static_library")
 
 rust_static_library(
-    name = "brutus-server",
-    srcs = glob(
-        ["src/**/*.rs"],
-    ),
-    deps = all_crate_deps(),
+    name = "lib",
+    srcs = glob(["src/**/*.rs"]),
     visibility = ["//visibility:public"],
+    deps = all_crate_deps(),
+    compile_data = [":proto"],
+    rustc_env = {
+        "BAZEL_PROTO_RUST_OUTDIR": "$(execpath :proto)",
+    },
+)
+
+cargo_build_script(
+    name = "proto",
+    srcs = ["build.rs"],
+    data = ["//common/proto:proto", "@org_capnproto_go_capnp_v3//:std"],
+    deps = ["@crate_index__capnpc-0.19.0//:capnpc"],
+    build_script_env = {
+        "BAZEL_PROTO_GO_INCLUDE_PATH": "$(execpath @org_capnproto_go_capnp_v3//:std)",
+        "BAZEL_PROTO_SRC_PATH": "$(execpath //common/proto:proto)",
+    },
+    visibility = ["//visibility:private"],
 )
