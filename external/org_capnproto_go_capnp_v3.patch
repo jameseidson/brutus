@@ -4,7 +4,7 @@ index 87ba4c6..3a6d7fe 100644
 +++ BUILD.bazel
 @@ -1,5 +1,7 @@
  load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
- 
+
 +exports_files(["std"])
 +
  go_library(

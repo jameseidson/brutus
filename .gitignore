@@ -2,3 +2,4 @@ bazel-*
 target/
 output/
 .bazelversion
+rust-project.json

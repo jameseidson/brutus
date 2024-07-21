@@ -8,22 +8,40 @@ go_binary(
 
 go_library(
     name = "lib",
-    srcs = ["main.go"],
-    embedsrcs = ["proto.capnp.go"],
+    srcs = [
+        "main.go",
+    ],
+    deps = [
+        ":proto",
+        "@org_capnproto_go_capnp_v3//:capnp",
+    ],
     cdeps = ["//common/ffi:ffi"],
     cgo = True,
-    importpath = "github.com/jameseidson/brutus/tree/main/client/client",
+    importpath = "github.com/jameseidson/brutus/tree/main/client",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "proto",
+    srcs = [":proto-srcs"],
+    deps = [
+        "@org_capnproto_go_capnp_v3//:capnp",
+        "@org_capnproto_go_capnp_v3//encoding/text",
+        "@org_capnproto_go_capnp_v3//schemas",
+    ],
+    importpath = "github.com/jameseidson/brutus/tree/main/common/proto",
     visibility = ["//visibility:private"],
 )
 
 genrule(
-    name = "proto",
+    name = "proto-srcs",
     srcs = [
-        "//common/proto:proto",
+        "//common/proto",
+        "@capnproto-cpp-1.0.2//:compiler",
         "@org_capnproto_go_capnp_v3//:std",
-        "@org_capnproto_go_capnp_v3//capnpc-go:capnpc-go",
+        "@org_capnproto_go_capnp_v3//capnpc-go",
     ],
     outs = ["proto.capnp.go"],
-    cmd = "capnp compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //common/proto:proto)",
+    cmd = "$(execpath @capnproto-cpp-1.0.2//:compiler) compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //common/proto:proto)",
     visibility = ["//visibility:private"],
 )

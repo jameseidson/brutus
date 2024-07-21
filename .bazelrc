@@ -1,1 +1,2 @@
 common --noenable_bzlmod
+common --@rules_rust//:clippy_flags=-D,clippy::correctness,-W,clippy::suspicious,-W,clippy::style,-W,clippy::complexity,-W,clippy::perf,-A,clippy::pedantic,-A,clippy::restriction,-A,clippy::nursery,-W,clippy::cargo

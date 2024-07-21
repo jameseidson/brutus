@@ -17,9 +17,10 @@ use std::{
 
 pub mod common;
 pub mod ipc;
-pub mod proto_capnp;
+pub mod proto {
+    include!(env!("BAZEL_RUST_PROTO_MODULE"));
+}
 pub mod ui;
-
 use common::TermSize;
 use ipc::{
     pid::{Pid, PidFile, SingletonProcessHandle},

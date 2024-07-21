@@ -1,6 +1,26 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "capnproto-cpp-1.0.2",
+    build_file = "capnproto-cpp-1.0.2.BUILD",
+    integrity = "sha256-kFfbwCIzZrdLvsozoF3hZKIpsDd5J/G37zgozdjLHX4=",
+    sha256 = "",
+    strip_prefix = "capnproto-c++-1.0.2/",
+    urls = ["https://capnproto.org/capnproto-c++-1.0.2.tar.gz"],
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    integrity = "sha256-Kk0HzWSwcZs5p8EiGKPlB2crgql7mMaonThWWJTPfFE=",
+    strip_prefix = "rules_foreign_cc-0.9.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.9.0.tar.gz",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()
+
+http_archive(
     name = "rules_rust",
     integrity = "sha256-F8U7+AC5MvMtPKGdLLnorVM84cDXKfDRgwd7/dq3rUY=",
     urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.46.0/rules_rust-v0.46.0.tar.gz"],
@@ -31,6 +51,10 @@ crates_repository(
 load("@crate_index//:defs.bzl", "crate_repositories")
 
 crate_repositories()
+
+load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
+
+rust_analyzer_dependencies()
 
 http_archive(
     name = "io_bazel_rules_go",
