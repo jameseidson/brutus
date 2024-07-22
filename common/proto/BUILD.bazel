@@ -3,3 +3,11 @@ filegroup(
     srcs = ["proto.capnp"],
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "use-system-capnp",
+    flag_values = {
+        "//:use-system-capnp": "true",
+    },
+    visibility = ["//visibility:public"],
+)

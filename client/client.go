@@ -1,16 +1,14 @@
-package main
+package client
 
 import (
-	"log/slog"
-
+	"C"
 	"capnproto.org/go/capnp/v3"
 	"github.com/jameseidson/brutus/tree/main/common/proto"
+	"log/slog"
 )
 
-// #include "common/ffi/ffi.h"
-import "C"
-
-func main() {
+//export RunClient
+func RunClient(server_pid uint32) {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		panic(err)
@@ -25,8 +23,6 @@ func main() {
 	slog.Info("the message is", cmd.Message())
 
 	slog.Info("hello from brutus client")
-
-	server_pid := C.spawn_server_if_not_running()
 
 	slog.Info("the server's pid is", "pid", server_pid)
 

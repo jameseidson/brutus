@@ -3,6 +3,6 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "ffi",
     hdrs = ["ffi.h"],
-    deps = ["//server:lib"],
+    deps = ["//client", "//server"],
     visibility = ["//visibility:public"],
 )

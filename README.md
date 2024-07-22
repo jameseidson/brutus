@@ -18,7 +18,7 @@ Getting LSP servers to work well with Bazel and generated code requires some set
 
    This file supplies Bazel build information to rust-analyzer and will be automatically discovered. Documentation can be found [here](https://rust-analyzer.github.io/manual.html#non-cargo-based-projects).
 
-3. Apply the following language server configuration as appropriate for your editor.
+3. Apply the following language server configurations as appropriate for your editor. The scripts used in these configurations assume you have the [capnp](https://capnproto.org/) binary on your `$PATH`.
 
    ```
    "rust-analyzer.check.overrideCommand": ["scripts/rustanalyzer-bazel-bridge.sh"],
@@ -26,7 +26,6 @@ Getting LSP servers to work well with Bazel and generated code requires some set
 
    ```
    "gopls.env": {
-     "GOPACKAGESDRIVER_BAZEL_QUERY": "kind(go_binary, //...)",
      "GOPACKAGESDRIVER": "<PATH TO REPOSITORY>/scripts/gopls-bazel-bridge.sh",
    }
    ```

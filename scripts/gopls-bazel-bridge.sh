@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec bazel run @io_bazel_rules_go//go/tools/gopackagesdriver "${@}"
+exec bazel run --//:use-system-capnp=true @io_bazel_rules_go//go/tools/gopackagesdriver "${@}"

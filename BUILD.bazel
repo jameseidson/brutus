@@ -1,11 +1,19 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 # gazelle:prefix github.com/jameseidson/brutus/tree/main/client
 gazelle(name = "gazelle")
 
-alias(
+cc_binary(
     name = "brutus",
-    actual = "//client:brutus",
+    srcs = ["brutus.c"],
+    deps = ["//common/ffi"],
+)
+
+bool_flag(
+    name = "use-system-capnp",
+    build_setting_default = False,
     visibility = ["//visibility:public"],
 )
 

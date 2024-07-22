@@ -1,24 +1,25 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
-    name = "brutus",
-    embed = [":lib"],
+    name = "client",
+    srcs = ["empty-main-for-cgo.go"],
+    deps = [":client-go-lib"],
+    cgo = True,
+    linkmode = "c-archive",
     visibility = ["//visibility:public"],
 )
 
 go_library(
-    name = "lib",
-    srcs = [
-        "main.go",
-    ],
+    name = "client-go-lib",
+    srcs = ["client.go"],
     deps = [
         ":proto",
         "@org_capnproto_go_capnp_v3//:capnp",
     ],
-    cdeps = ["//common/ffi:ffi"],
-    cgo = True,
     importpath = "github.com/jameseidson/brutus/tree/main/client",
-    visibility = ["//visibility:private"],
+    cgo = True,
+    visibility = ["//visibility:public"],
 )
 
 go_library(
@@ -37,11 +38,23 @@ genrule(
     name = "proto-srcs",
     srcs = [
         "//common/proto",
-        "@capnproto-cpp-1.0.2//:compiler",
         "@org_capnproto_go_capnp_v3//:std",
         "@org_capnproto_go_capnp_v3//capnpc-go",
-    ],
+    ] + select({
+        "//common/proto:use-system-capnp": [],
+        "//conditions:default": ["@capnproto-cpp-1.0.2//:compiler"],
+    }),
     outs = ["proto.capnp.go"],
-    cmd = "$(execpath @capnproto-cpp-1.0.2//:compiler) compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //common/proto:proto)",
+    cmd = select({
+        "//common/proto:use-system-capnp": "capnp",
+        "//conditions:default": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
+    }) + " compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //common/proto:proto)",
+    visibility = ["//visibility:private"],
+)
+
+write_file(
+    name = "empty-main-for-cgo",
+    out = "empty-main-for-cgo.go",
+    content = ["package main", "import \"C\"", "import _ \"github.com/jameseidson/brutus/tree/main/client\"", "func main() {}"],
     visibility = ["//visibility:private"],
 )

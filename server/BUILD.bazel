@@ -3,7 +3,7 @@ load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_static_library")
 
 rust_static_library(
-    name = "lib",
+    name = "server",
     srcs = glob(["src/**/*.rs"]),
     rustc_env = {
         "BAZEL_RUST_PROTO_MODULE": "$(execpath :proto)/proto_capnp.rs",
@@ -19,12 +19,17 @@ cargo_build_script(
         "BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
         "BAZEL_PROTO_GO_INCLUDE_PATH": "$(execpath @org_capnproto_go_capnp_v3//:std)",
         "BAZEL_PROTO_SRC_PATH": "$(execpath //common/proto:proto)",
-    },
+    } | select({
+        "//common/proto:use-system-capnp": {"BAZEL_CAPNP_COMPILER_PATH": "capnp"},
+        "//conditions:default": {"BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)"},
+    }),
     data = [
         "//common/proto",
-        "@capnproto-cpp-1.0.2//:compiler",
         "@org_capnproto_go_capnp_v3//:std",
-    ],
+    ] + select({
+        "//common/proto:use-system-capnp": [],
+        "//conditions:default": ["@capnproto-cpp-1.0.2//:compiler"],
+    }),
     visibility = ["//visibility:private"],
     deps = ["@crate_index__capnpc-0.19.0//:capnpc"],
 )
