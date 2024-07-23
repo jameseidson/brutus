@@ -1,8 +1,8 @@
-module github.com/jameseidson/brutus/tree/main/client
+module github.com/jameseidson/brutus/tree/main/src/client
 
 go 1.22.0
 
-require github.com/jameseidson/brutus/tree/main/common/proto v0.0.0
+require github.com/jameseidson/brutus/tree/main/src/common/proto v0.0.0
 
 require capnproto.org/go/capnp/v3 v3.0.1-alpha.1
 

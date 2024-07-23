@@ -9,9 +9,9 @@ filegroup(
 
 configure_make(
     name = "capnproto",
+    configure_options = ["--disable-shared"],
     lib_source = "//:all",
     out_binaries = ["capnp"],
-    configure_options = ["--disable-shared"],
     targets = ["install"],
     visibility = ["//visibility:private"],
 )

@@ -1,15 +1,8 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
-# gazelle:prefix github.com/jameseidson/brutus/tree/main/client
+# gazelle:prefix github.com/jameseidson/brutus/tree/main/src/client
 gazelle(name = "gazelle")
-
-cc_binary(
-    name = "brutus",
-    srcs = ["brutus.c"],
-    deps = ["//common/ffi"],
-)
 
 bool_flag(
     name = "use-system-capnp",

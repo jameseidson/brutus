@@ -18,16 +18,16 @@ cargo_build_script(
     build_script_env = {
         "BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
         "BAZEL_PROTO_GO_INCLUDE_PATH": "$(execpath @org_capnproto_go_capnp_v3//:std)",
-        "BAZEL_PROTO_SRC_PATH": "$(execpath //common/proto:proto)",
+        "BAZEL_PROTO_SRC_PATH": "$(execpath //src/common/proto)",
     } | select({
-        "//common/proto:use-system-capnp": {"BAZEL_CAPNP_COMPILER_PATH": "capnp"},
+        "//src/common/proto:use-system-capnp": {"BAZEL_CAPNP_COMPILER_PATH": "capnp"},
         "//conditions:default": {"BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)"},
     }),
     data = [
-        "//common/proto",
+        "//src/common/proto",
         "@org_capnproto_go_capnp_v3//:std",
     ] + select({
-        "//common/proto:use-system-capnp": [],
+        "//src/common/proto:use-system-capnp": [],
         "//conditions:default": ["@capnproto-cpp-1.0.2//:compiler"],
     }),
     visibility = ["//visibility:private"],

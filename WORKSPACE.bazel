@@ -44,7 +44,7 @@ crates_repository(
     lockfile = "//:Cargo.bazel.lock",
     manifests = [
         "//:Cargo.toml",
-        "//server:Cargo.toml",
+        "//src/server:Cargo.toml",
     ],
 )
 

@@ -3,7 +3,7 @@ package client
 import (
 	"C"
 	"capnproto.org/go/capnp/v3"
-	"github.com/jameseidson/brutus/tree/main/common/proto"
+	"github.com/jameseidson/brutus/tree/main/src/common/proto"
 	"log/slog"
 )
 
