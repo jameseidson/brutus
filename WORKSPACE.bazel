@@ -40,12 +40,9 @@ load("@rules_rust//crate_universe:defs.bzl", "crates_repository")
 
 crates_repository(
     name = "crate_index",
-    cargo_lockfile = "//:Cargo.lock",
-    lockfile = "//:Cargo.bazel.lock",
-    manifests = [
-        "//:Cargo.toml",
-        "//src/server:Cargo.toml",
-    ],
+    cargo_lockfile = "//src/server:Cargo.lock",
+    lockfile = "//src/server:Cargo.bazel.lock",
+    manifests = ["//src/server:Cargo.toml"],
 )
 
 load("@crate_index//:defs.bzl", "crate_repositories")
