@@ -9,7 +9,7 @@ use simplelog::{
 };
 use std::{
     env,
-    ffi::CString,
+    ffi::{CStr, CString},
     fs::File,
     io::{self, ErrorKind, Read, Stdout, Write},
     process::exit,
@@ -24,7 +24,7 @@ pub mod ui;
 use common::TermSize;
 use ipc::{
     pid::{Pid, PidFile, SingletonProcessHandle},
-    pty,
+    pty, shm,
 };
 
 const SERVER_PROCESS_NAME: &'static str = "brutusd";
@@ -85,7 +85,7 @@ pub fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
             match unsafe { fork() }.unwrap() {
                 ForkResult::Parent { child: server_pid } => {
                     // We are a useless intermediary process, but we know what the server's pid is!
-                    // Let's send that to the client so that our short life will have some meaning.
+                    // Let's send that to the client so that our short existence will have some meaning.
                     pid_file.drop_without_unlocking();
 
                     let server_pid = Pid::from(u32::try_from(server_pid.as_raw()).unwrap());
@@ -98,7 +98,7 @@ pub fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
                     pid_file.write_my_pid().unwrap();
                     prctl::set_name(CString::new(SERVER_PROCESS_NAME).unwrap().as_c_str()).unwrap();
 
-                    main();
+                    run_server();
 
                     unreachable!();
                 }
@@ -108,8 +108,15 @@ pub fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
 }
 
 /// Runs the server.
-pub fn main() {
-    loop {}
+pub fn run_server() {
+    unsafe {
+        let mut ipc_channel =
+            ipc::ipc_open(CString::new("testhandle").unwrap().as_c_str().as_ptr(), 4);
+        ipc::ipc_send(&mut ipc_channel, [0, 1, 2, 3].as_ptr());
+    }
+    debug!("got to here!");
+
+    // loop {}
     // let (cols, rows) = termion::terminal_size().unwrap();
 
     // let (_, reader, mut writer) = ui::Pane::new(

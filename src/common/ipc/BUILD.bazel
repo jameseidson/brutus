@@ -1,0 +1,29 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_binary(
+    name = "test",
+    srcs = ["main.c"],
+    deps = [":ipc"],
+)
+
+cc_library(
+    name = "ipc",
+    hdrs = glob(["include/**"]),
+    srcs = ["src/ipc.c"],
+    deps = [":queue", ":log"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "queue",
+    hdrs = ["src/queue.h"],
+    srcs = ["src/queue.c"],
+    deps = [":log"],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "log",
+    hdrs = ["src/log.h"],
+    visibility = ["//visibility:private"],
+)

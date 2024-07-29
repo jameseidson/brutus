@@ -13,6 +13,7 @@ go_binary(
 go_library(
     name = "client-go-lib",
     srcs = ["client.go"],
+    cdeps = ["//src/common/ipc"],
     cgo = True,
     importpath = "github.com/jameseidson/brutus/tree/main/src/client",
     visibility = ["//visibility:public"],

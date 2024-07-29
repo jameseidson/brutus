@@ -9,7 +9,7 @@ rust_static_library(
         "BAZEL_RUST_PROTO_MODULE": "$(execpath :proto)/proto_capnp.rs",
     },
     visibility = ["//visibility:public"],
-    deps = all_crate_deps() + [":proto"],
+    deps = all_crate_deps() + ["//src/common/ipc", ":proto"],
 )
 
 cargo_build_script(
