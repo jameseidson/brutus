@@ -6,5 +6,5 @@ $Go.package("proto");
 $Go.import("github.com/jameseidson/brutus/tree/main/src/common/proto");
 
 struct Command {
-  message @0 :Text;
+  msg @0 :Text;
 }

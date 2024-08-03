@@ -123,7 +123,7 @@ where
                         // .unwrap();
 
                         let bytes_read = reader.read(&mut buf).unwrap();
-                        writer.write(&buf[0..bytes_read]).unwrap();
+                        writer.write_all(&buf[0..bytes_read]).unwrap();
                     }
                 }
             }
@@ -145,6 +145,9 @@ where
             ));
         }
 
+        // TODO: Currently could block on write. Should register writers with writeable interest
+        // and buffer writes if not immediately writeable.
+        // Also, we need to close the connection when writer is_write_closed.
         poll.registry().register(
             &mut connections.get_mut(id).unwrap().0,
             Token(id),

@@ -1,5 +1,5 @@
 {
-  "checksum": "6a0348734c5c6ad72b5e2f03296143e85230c1e6780f3bac87b37edb631bf573",
+  "checksum": "6cdbf1382b1950cc24ecceb022b83d3bef540c31718b4f4145203218db1ace20",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -1753,7 +1753,7 @@
               "target": "termcolor"
             },
             {
-              "id": "time 0.3.32",
+              "id": "time 0.3.36",
               "target": "time"
             }
           ],
@@ -2015,14 +2015,14 @@
       ],
       "license_file": "LICENSE"
     },
-    "time 0.3.32": {
+    "time 0.3.36": {
       "name": "time",
-      "version": "0.3.32",
+      "version": "0.3.36",
       "package_url": "https://github.com/time-rs/time",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/time/0.3.32/download",
-          "sha256": "fe80ced77cbfb4cb91a94bf72b378b4b6791a0d9b7f09d0be747d1bdff4e68bd"
+          "url": "https://static.crates.io/crates/time/0.3.36/download",
+          "sha256": "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
         }
       },
       "targets": [
@@ -2325,13 +2325,13 @@
         "proc_macro_deps": {
           "common": [
             {
-              "id": "time-macros 0.2.17",
+              "id": "time-macros 0.2.18",
               "target": "time_macros"
             }
           ],
           "selects": {}
         },
-        "version": "0.3.32"
+        "version": "0.3.36"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -2379,14 +2379,14 @@
       ],
       "license_file": "LICENSE-Apache"
     },
-    "time-macros 0.2.17": {
+    "time-macros 0.2.18": {
       "name": "time-macros",
-      "version": "0.2.17",
+      "version": "0.2.18",
       "package_url": "https://github.com/time-rs/time",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/time-macros/0.2.17/download",
-          "sha256": "7ba3a3ef41e6672a2f0f001392bb5dcd3ff0a9992d618ca761a11c3121547774"
+          "url": "https://static.crates.io/crates/time-macros/0.2.18/download",
+          "sha256": "3f252a68540fde3a3877aeea552b832b40ab9a69e318efd078774a01ddee1ccf"
         }
       },
       "targets": [
@@ -2428,7 +2428,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.2.17"
+        "version": "0.2.18"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [

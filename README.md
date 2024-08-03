@@ -44,6 +44,7 @@ Getting language servers to work well with Bazel and generated code requires som
 
    - **VS Code** is already configured via `.vscode/settings.json`.
    - **Neovim** is already configured via `.nvim.lua`. This requires [`vim.opt.exrc = true`](https://neovim.io/doc/user/options.html#'exrc') in your global Neovim configuration.
+   - **Zed** is already configured via `.zed/settings.json`.
 
 ### Workflows
 

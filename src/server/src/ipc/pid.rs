@@ -1,19 +1,13 @@
-use core::fmt;
 use log::debug;
-use nix::{
-    fcntl::{Flock, FlockArg},
-    unistd::geteuid,
-};
+use nix::fcntl::{Flock, FlockArg};
 use std::{
     fs::{remove_file, File, OpenOptions},
-    io::{self, ErrorKind, Read, Write},
+    io::{self, Read, Write},
     mem::{self, ManuallyDrop},
     ops::Deref,
-    path::{Path, PathBuf},
+    path::PathBuf,
     process,
 };
-
-const PID_FILE_DIR: &'static str = "/var/run/user";
 
 #[derive(Debug)]
 pub struct Pid(u32);
@@ -25,12 +19,12 @@ impl Pid {
 
     pub fn read_from(mut reader: impl Read) -> io::Result<Self> {
         let mut buf = [0; 4];
-        reader.read(&mut buf)?;
+        reader.read_exact(&mut buf)?;
         Ok(Self(u32::from_ne_bytes(buf)))
     }
 
     pub fn write_to(&self, mut writer: impl Write) -> io::Result<()> {
-        writer.write(&self.0.to_ne_bytes())?;
+        writer.write_all(&self.0.to_ne_bytes())?;
         Ok(())
     }
 }
@@ -59,9 +53,7 @@ impl SingletonProcessHandle {
     /// `Singleton` owns a `PidFile` which will exclude other identical processes for as long as it lives.
     /// `AlreadyRunning` provides the pid of the already running singleton process.
     pub fn new(name: String) -> io::Result<Self> {
-        let path = Path::new(PID_FILE_DIR)
-            .join(geteuid().to_string())
-            .join(name + ".pid");
+        let path = crate::RUNTIME_DIR.as_path().join(name + ".pid");
 
         match PidFile::new(&path) {
             Ok(file) => {
@@ -131,7 +123,7 @@ impl PidFile {
             .read(true)
             .write(false)
             .create(false)
-            .open(&path.into())?;
+            .open(path.into())?;
 
         match Flock::lock(file, FlockArg::LockShared) {
             Ok(file) => Pid::read_from(file.deref()),
@@ -147,10 +139,6 @@ impl PidFile {
     /// so this function is necessary to safely drop one of the descriptors without unlocking the
     /// file.
     pub fn drop_without_unlocking(mut self) {
-        debug!(
-            "closing pid file without unlocking it in process {}",
-            process::id()
-        );
         unsafe {
             ManuallyDrop::<PathBuf>::drop(&mut self.path);
         }

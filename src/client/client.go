@@ -2,30 +2,60 @@ package client
 
 import (
 	"C"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"strconv"
+	"sync"
+
 	"capnproto.org/go/capnp/v3"
 	"github.com/jameseidson/brutus/tree/main/src/common/proto"
-	"log/slog"
 )
 
-//export RunClient
-func RunClient(server_pid uint32) {
+var RuntimeDir = sync.OnceValue[string](func() string {
+	return filepath.Join("/var/run/user", strconv.Itoa(os.Geteuid()), "brutus")
+})
+
+var CmdPipe = sync.OnceValue[*os.File](func() *os.File {
+	slog.Debug("opening fifo in client")
+	path := filepath.Join(RuntimeDir(), "cmd.pipe")
+	pipe, err := os.OpenFile(path, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		panic(err)
+	}
+	return pipe
+})
+
+var Log = sync.OnceValue[*slog.Logger](func() (logger *slog.Logger) {
+	logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	return
+})
+
+func testCommand() (cmd proto.Command) {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		panic(err)
 	}
 
-	cmd, err := proto.NewRootCommand(seg)
+	cmd, err = proto.NewRootCommand(seg)
 	if err != nil {
 		panic(err)
 	}
 
-	_ = cmd.SetMessage_("A convincing message.")
-	slog.Info("the message is", cmd.Message())
+	cmd.SetMsg("Hello from client :)")
 
-	slog.Info("hello from brutus client")
+	return
+}
 
-	slog.Info("the server's pid is", "pid", server_pid)
+//export RunClient
+func RunClient(server_pid uint32) {
+	Log().Info("hello from brutus client")
 
-	for {
+	Log().Info("the server's pid is", "pid", server_pid)
+
+	encoder := capnp.NewEncoder(CmdPipe())
+	err := encoder.Encode(testCommand().Message())
+	if err != nil {
+		panic(err)
 	}
 }

@@ -11,7 +11,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::common::TermSize;
+use crate::util::TermSize;
 
 pub fn open(cmd: String, size: TermSize) -> (Controller, Reader, Writer) {
     match unsafe { pty::forkpty(Some(&size.into()), Option::None) }.unwrap() {

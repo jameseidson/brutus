@@ -1,4 +1,4 @@
-use crate::{common::TermSize, ipc::pty};
+use crate::{ipc::pty, util::TermSize};
 
 pub struct Pane {
     ptmx: pty::Controller,

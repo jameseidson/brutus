@@ -1,0 +1,18 @@
+{
+  "lsp": {
+    "gopls": {
+      "initialization_options": {
+        "env": {
+          "GOPACKAGESDRIVER": "scripts/gopls-bazel-bridge.sh"
+        }
+      }
+    },
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "overrideCommand": ["scripts/rustanalyzer-bazel-bridge.sh"]
+        }
+      }
+    }
+  }
+}
