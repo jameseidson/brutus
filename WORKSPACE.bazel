@@ -30,7 +30,10 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 
 rules_rust_dependencies()
 
-rust_register_toolchains(edition = "2021", versions = ["1.80.0"])
+rust_register_toolchains(
+    edition = "2021",
+    versions = ["1.80.0"],
+)
 
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 
@@ -160,8 +163,120 @@ go_repository(
 go_repository(
     name = "org_golang_x_sync",
     importpath = "golang.org/x/sync",
-    sum = "h1:SQFwaSi55rU7vdNs9Yr0Z324VNlrF+0wMqRXT4St8ck=",
-    version = "v0.0.0-20201020160332-67f06af15bc9",
+    sum = "h1:YsImfSBoP9QPYL0xyKJPq0gcaJdG3rInoqxTWbfQu9M=",
+    version = "v0.7.0",
+)
+
+go_repository(
+    name = "com_github_charmbracelet_bubbletea",
+    importpath = "github.com/charmbracelet/bubbletea",
+    sum = "h1:zTCWSuST+3yZYZnVSvbXwKOPRSNZceVeqpzOLN2zq1s=",
+    version = "v0.26.6",
+)
+
+go_repository(
+    name = "com_github_charmbracelet_x_ansi",
+    importpath = "github.com/charmbracelet/x/ansi",
+    sum = "h1:6+LR39uG8DE6zAmbu023YlqjJHkYXDF1z36ZwzO4xZY=",
+    version = "v0.1.2",
+)
+
+go_repository(
+    name = "com_github_charmbracelet_x_input",
+    importpath = "github.com/charmbracelet/x/input",
+    sum = "h1:TEsGSfZYQyOtp+STIjyBq6tpRaorH0qpwZUj8DavAhQ=",
+    version = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_charmbracelet_x_term",
+    importpath = "github.com/charmbracelet/x/term",
+    sum = "h1:3cosVAiPOig+EV4X9U+3LDgtwwAoEzJjNdwbXDjF6yI=",
+    version = "v0.1.1",
+)
+
+go_repository(
+    name = "com_github_charmbracelet_x_windows",
+    importpath = "github.com/charmbracelet/x/windows",
+    sum = "h1:gTaxdvzDM5oMa/I2ZNF7wN78X/atWemG9Wph7Ika2k4=",
+    version = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_erikgeiser_coninput",
+    importpath = "github.com/erikgeiser/coninput",
+    sum = "h1:Y/CXytFA4m6baUTXGLOoWe4PQhGxaX0KpnayAqC48p4=",
+    version = "v0.0.0-20211004153227-1c3628e74d0f",
+)
+
+go_repository(
+    name = "com_github_mattn_go_localereader",
+    importpath = "github.com/mattn/go-localereader",
+    sum = "h1:ygSAOl7ZXTx4RdPYinUpg6W99U8jWvWi9Ye2JC/oIi4=",
+    version = "v0.0.1",
+)
+
+go_repository(
+    name = "com_github_mattn_go_runewidth",
+    importpath = "github.com/mattn/go-runewidth",
+    sum = "h1:UNAjwbU9l54TA3KzvqLGxwWjHmMgBUVhBiTjelZgg3U=",
+    version = "v0.0.15",
+)
+
+go_repository(
+    name = "com_github_muesli_ansi",
+    importpath = "github.com/muesli/ansi",
+    sum = "h1:ZK8zHtRHOkbHy6Mmr5D264iyp3TiX5OmNcI5cIARiQI=",
+    version = "v0.0.0-20230316100256-276c6243b2f6",
+)
+
+go_repository(
+    name = "com_github_muesli_cancelreader",
+    importpath = "github.com/muesli/cancelreader",
+    sum = "h1:3I4Kt4BQjOR54NavqnDogx/MIoWBFa0StPA8ELUXHmA=",
+    version = "v0.2.2",
+)
+
+go_repository(
+    name = "com_github_rivo_uniseg",
+    importpath = "github.com/rivo/uniseg",
+    sum = "h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=",
+    version = "v0.4.7",
+)
+
+go_repository(
+    name = "com_github_xo_terminfo",
+    importpath = "github.com/xo/terminfo",
+    sum = "h1:JVG44RsyaB9T2KIHavMF/ppJZNG9ZpyihvCd0w101no=",
+    version = "v0.0.0-20220910002029-abceb7e1c41e",
+)
+
+go_repository(
+    name = "org_golang_x_mod",
+    importpath = "golang.org/x/mod",
+    sum = "h1:6zppjxzCulZykYSLyVDYbneBfbaBIQPYMevg0bEwv2s=",
+    version = "v0.6.0-dev.0.20220419223038-86c51ed26bb4",
+)
+
+go_repository(
+    name = "org_golang_x_sys",
+    importpath = "golang.org/x/sys",
+    sum = "h1:rF+pYz3DAGSQAxAu1CbC7catZg4ebC4UIeIhKxBZvws=",
+    version = "v0.21.0",
+)
+
+go_repository(
+    name = "org_golang_x_text",
+    importpath = "golang.org/x/text",
+    sum = "h1:nAL+RVCQ9uMn3vJZbV+MRnydTJFPf8qqY42YiA6MrqY=",
+    version = "v0.3.8",
+)
+
+go_repository(
+    name = "org_golang_x_tools",
+    importpath = "golang.org/x/tools",
+    sum = "h1:VveCTK38A2rkS8ZqFY25HIDFscX5X9OoEhJd3quQmXU=",
+    version = "v0.1.12",
 )
 
 gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")

@@ -1,23 +1,14 @@
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
-go_binary(
-    name = "client",
-    srcs = ["empty-main-for-cgo.go"],
-    cgo = True,
-    linkmode = "c-archive",
-    visibility = ["//visibility:public"],
-    deps = [":client-go-lib"],
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "client-go-lib",
+    name = "client",
     srcs = ["client.go"],
     cgo = True,
-    importpath = "github.com/jameseidson/brutus/tree/main/src/client",
+    importpath = "github.com/jameseidson/brutus/client",
     visibility = ["//visibility:public"],
     deps = [
         ":proto",
+        "//src/client/internal:pkg-ui",
         "@org_capnproto_go_capnp_v3//:capnp",
     ],
 )
@@ -25,7 +16,7 @@ go_library(
 go_library(
     name = "proto",
     srcs = [":proto-srcs"],
-    importpath = "github.com/jameseidson/brutus/tree/main/src/common/proto",
+    importpath = "github.com/jameseidson/brutus/common/proto",
     visibility = ["//visibility:private"],
     deps = [
         "@org_capnproto_go_capnp_v3//:capnp",
@@ -49,17 +40,5 @@ genrule(
         "//src/common/proto:use-system-capnp": "capnp",
         "//conditions:default": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
     }) + " compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=src/common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //src/common/proto)",
-    visibility = ["//visibility:private"],
-)
-
-write_file(
-    name = "empty-main-for-cgo",
-    out = "empty-main-for-cgo.go",
-    content = [
-        "package main",
-        "import \"C\"",
-        "import _ \"github.com/jameseidson/brutus/tree/main/src/client\"",
-        "func main() {}",
-    ],
     visibility = ["//visibility:private"],
 )

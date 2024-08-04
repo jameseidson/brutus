@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
@@ -5,7 +7,28 @@ cc_library(
     hdrs = ["ffi.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//src/client",
+        ":client",
         "//src/server",
     ],
+)
+
+go_binary(
+    name = "client",
+    srcs = ["empty-main-for-cgo.go"],
+    cgo = True,
+    linkmode = "c-archive",
+    visibility = ["//visibility:private"],
+    deps = ["//src/client"],
+)
+
+write_file(
+    name = "empty-main-for-cgo",
+    out = "empty-main-for-cgo.go",
+    content = [
+        "package main",
+        "import \"C\"",
+        "import _ \"github.com/jameseidson/brutus/client\"",
+        "func main() {}",
+    ],
+    visibility = ["//visibility:private"],
 )

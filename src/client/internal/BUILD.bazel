@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "pkg-ui",
+    srcs = glob(["ui/**/*.go"]),
+    importpath = "github.com/jameseidson/brutus/client/ui",
+    visibility = ["//src/client:__subpackages__"],
+    deps = [
+        "@com_github_charmbracelet_bubbletea//:bubbletea",
+    ],
+)

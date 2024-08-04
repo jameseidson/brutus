@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"capnproto.org/go/capnp/v3"
-	"github.com/jameseidson/brutus/tree/main/src/common/proto"
+	"github.com/jameseidson/brutus/common/proto"
 )
 
 var RuntimeDir = sync.OnceValue[string](func() string {

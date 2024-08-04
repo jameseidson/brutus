@@ -53,3 +53,9 @@ Update Bazel dependencies from `src/server/Cargo.toml`:
 ```
 CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index
 ```
+
+Update Bazel dependencies from `src/client/go.mod`:
+
+```
+gazelle update-repos -from_file=src/client/go.mod
+```
