@@ -15,7 +15,7 @@ go_library(
 
 go_library(
     name = "proto",
-    srcs = [":proto-srcs"],
+    srcs = [":proto-go-src"],
     importpath = "github.com/jameseidson/brutus/common/proto",
     visibility = ["//visibility:private"],
     deps = [
@@ -26,7 +26,7 @@ go_library(
 )
 
 genrule(
-    name = "proto-srcs",
+    name = "proto-go-src",
     srcs = [
         "//src/common/proto",
         "@org_capnproto_go_capnp_v3//:std",
@@ -39,6 +39,6 @@ genrule(
     cmd = select({
         "//src/common/proto:use-system-capnp": "capnp",
         "//conditions:default": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
-    }) + " compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=src/common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpath //src/common/proto)",
+    }) + " compile -I $(execpath @org_capnproto_go_capnp_v3//:std) --src-prefix=src/common/proto -o$(execpath @org_capnproto_go_capnp_v3//capnpc-go:capnpc-go):$(RULEDIR) $(execpaths //src/common/proto)",
     visibility = ["//visibility:private"],
 )

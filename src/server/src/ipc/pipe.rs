@@ -1,3 +1,4 @@
+use nix::{sys::stat, unistd::mkfifo};
 use std::{
     fs::{File, OpenOptions},
     io,
@@ -5,24 +6,27 @@ use std::{
     sync::LazyLock,
 };
 
-use nix::{sys::stat, unistd::mkfifo};
-
 use crate::util::filter_err;
 
-static PIPE_PATH: LazyLock<PathBuf> = LazyLock::new(|| crate::RUNTIME_DIR.join("cmd.pipe"));
-pub static PIPE: LazyLock<File> = LazyLock::new(|| {
+pub mod connector;
+
+pub static CLIENT_EVENT: LazyLock<File> = LazyLock::new(|| {
     OpenOptions::new()
         .read(true)
         .write(false)
         .create(false)
-        .open(PIPE_PATH.as_path())
+        .open(CLIENT_EVENT_PATH.as_path())
         .unwrap()
 });
 
-pub fn create_pipe() -> io::Result<()> {
+static CLIENT_EVENT_PATH: LazyLock<PathBuf> =
+    LazyLock::new(|| crate::RUNTIME_DIR.join("client.event"));
+
+// TODO: Only let this be called once.
+pub fn create_client_event_pipe() -> io::Result<()> {
     filter_err(
         mkfifo(
-            PIPE_PATH.as_path(),
+            CLIENT_EVENT_PATH.as_path(),
             stat::Mode::S_IRUSR | stat::Mode::S_IWUSR,
         )
         .map_err(io::Error::from),

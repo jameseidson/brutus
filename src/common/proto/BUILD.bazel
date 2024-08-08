@@ -1,5 +1,11 @@
 filegroup(
     name = "proto",
+    srcs = glob(["**/*.capnp"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "proto-root",
     srcs = ["proto.capnp"],
     visibility = ["//visibility:public"],
 )

@@ -1,9 +1,9 @@
 use capnp::{
-    message::{self, ReaderOptions, TypedReader},
+    message::{ReaderOptions, TypedReader},
     serialize,
 };
 use log::{debug, info};
-use mio::unix::pipe;
+use mio::unix::pipe as unix_pipe;
 use nix::{
     sys::prctl::set_name,
     unistd::{fork, geteuid, setsid, ForkResult},
@@ -14,15 +14,15 @@ use simplelog::{
 use std::{
     ffi::CString,
     fs::{create_dir, File},
-    io::{self, ErrorKind},
+    io::ErrorKind,
     path::PathBuf,
     process::exit,
     sync::LazyLock,
 };
 
 use ipc::{
-    command,
     pid::{Pid, PidFile, SingletonProcessHandle},
+    pipe,
 };
 use util::filter_err;
 
@@ -87,7 +87,7 @@ pub extern "C" fn spawn_server_if_not_running() -> u32 {
 ///   write its pid to the file and convert the locked to shared. This protocol lets new clients
 ///   know if the server process is already running and exposes its pid to them.
 fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
-    let (pid_sender, pid_receiver) = pipe::new().unwrap();
+    let (pid_sender, pid_receiver) = unix_pipe::new().unwrap();
     pid_sender.set_nonblocking(false).unwrap();
     pid_receiver.set_nonblocking(false).unwrap();
 
@@ -107,7 +107,7 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
                     // Let's send that to the client so that our short existence will have some meaning.
                     pid_file.drop_without_unlocking();
 
-                    command::create_pipe().unwrap();
+                    pipe::create_client_event_pipe().unwrap();
 
                     let server_pid = Pid::from(u32::try_from(server_pid.as_raw()).unwrap());
                     server_pid.write_to(pid_sender).unwrap();
@@ -131,7 +131,7 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
 
 /// Runs the server.
 pub fn run() {
-    let reader = serialize::read_message(&*command::PIPE, ReaderOptions::new()).unwrap();
+    let reader = serialize::read_message(&*pipe::CLIENT_EVENT, ReaderOptions::new()).unwrap();
     let command_reader = TypedReader::<_, proto::command::Owned>::new(reader);
 
     let command = command_reader.get().unwrap();

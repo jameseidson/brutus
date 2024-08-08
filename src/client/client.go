@@ -16,9 +16,9 @@ var RuntimeDir = sync.OnceValue[string](func() string {
 	return filepath.Join("/var/run/user", strconv.Itoa(os.Geteuid()), "brutus")
 })
 
-var CmdPipe = sync.OnceValue[*os.File](func() *os.File {
+var EventPipe = sync.OnceValue[*os.File](func() *os.File {
 	slog.Debug("opening fifo in client")
-	path := filepath.Join(RuntimeDir(), "cmd.pipe")
+	path := filepath.Join(RuntimeDir(), "client.event")
 	pipe, err := os.OpenFile(path, os.O_WRONLY, os.ModeNamedPipe)
 	if err != nil {
 		panic(err)
@@ -53,7 +53,7 @@ func RunClient(server_pid uint32) {
 
 	Log().Info("the server's pid is", "pid", server_pid)
 
-	encoder := capnp.NewEncoder(CmdPipe())
+	encoder := capnp.NewEncoder(EventPipe())
 	err := encoder.Encode(testCommand().Message())
 	if err != nil {
 		panic(err)
