@@ -9,36 +9,21 @@ use std::{
     process,
 };
 
-#[derive(Debug)]
-pub struct Pid(u32);
+pub type Pid = u32;
 
-impl Pid {
-    pub fn get_mine() -> Self {
-        process::id().into()
-    }
-
-    pub fn read_from(mut reader: impl Read) -> io::Result<Self> {
-        let mut buf = [0; 4];
-        reader.read_exact(&mut buf)?;
-        Ok(Self(u32::from_ne_bytes(buf)))
-    }
-
-    pub fn write_to(&self, mut writer: impl Write) -> io::Result<()> {
-        writer.write_all(&self.0.to_ne_bytes())?;
-        Ok(())
-    }
+pub fn get_mine() -> Pid {
+    process::id().into()
 }
 
-impl From<u32> for Pid {
-    fn from(value: u32) -> Self {
-        Self(value)
-    }
+pub fn read(mut reader: impl Read) -> io::Result<Pid> {
+    let mut buf = [0; 4];
+    reader.read_exact(&mut buf)?;
+    Ok(Pid::from_ne_bytes(buf))
 }
 
-impl From<Pid> for u32 {
-    fn from(value: Pid) -> Self {
-        value.0
-    }
+pub fn write(pid: Pid, mut writer: impl Write) -> io::Result<()> {
+    writer.write_all(&pid.to_ne_bytes())?;
+    Ok(())
 }
 
 /// Represents a process that should only be run once.
@@ -107,7 +92,7 @@ impl PidFile {
     /// The held lock to shared. This will allow clients to read our pid from the file but
     /// prevent them from taking exclusive ownership of it.
     pub fn write_my_pid(&mut self) -> io::Result<()> {
-        Pid::get_mine().write_to(self.file.deref().deref())?;
+        write(get_mine(), self.file.deref().deref())?;
 
         self.file
             .relock(FlockArg::LockSharedNonblock)
@@ -126,7 +111,7 @@ impl PidFile {
             .open(path.into())?;
 
         match Flock::lock(file, FlockArg::LockShared) {
-            Ok(file) => Pid::read_from(file.deref()),
+            Ok(file) => read(file.deref()),
             Err((_, err)) => Err(io::Error::from(err)),
         }
     }

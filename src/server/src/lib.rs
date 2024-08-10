@@ -2,30 +2,33 @@ use capnp::{
     message::{ReaderOptions, TypedReader},
     serialize,
 };
-use log::{debug, info};
+use log::{debug, error, info};
 use mio::unix::pipe as unix_pipe;
 use nix::{
-    sys::prctl::set_name,
-    unistd::{fork, geteuid, setsid, ForkResult},
+    sys::{prctl::set_name, stat},
+    unistd::{fork, geteuid, mkfifo, setsid, ForkResult},
 };
 use simplelog::{
     ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,
 };
 use std::{
     ffi::CString,
-    fs::{create_dir, File},
-    io::ErrorKind,
+    fs::{create_dir, remove_file, File},
+    io::{self, ErrorKind},
+    mem::ManuallyDrop,
     path::PathBuf,
     process::exit,
     sync::LazyLock,
 };
 
+use command::CommandPipe;
 use ipc::{
-    pid::{Pid, PidFile, SingletonProcessHandle},
+    pid::{self, Pid, PidFile, SingletonProcessHandle},
     pipe,
 };
 use util::filter_err;
 
+pub(crate) mod command;
 pub(crate) mod ipc;
 pub(crate) mod util;
 pub(crate) mod proto {
@@ -49,7 +52,7 @@ pub(crate) static RUNTIME_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
 });
 
 #[no_mangle]
-pub extern "C" fn spawn_server_if_not_running() -> u32 {
+pub extern "C" fn spawn_server_if_not_running() -> Pid {
     CombinedLogger::init(vec![
         WriteLogger::new(
             LevelFilter::Trace,
@@ -77,7 +80,6 @@ pub extern "C" fn spawn_server_if_not_running() -> u32 {
             server_pid
         }
     }
-    .into()
 }
 
 /// Traditional daemon implementation using double fork method. See
@@ -96,7 +98,7 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
             // We are the client process.
             pid_file.drop_without_unlocking();
 
-            Pid::read_from(pid_receiver).unwrap()
+            pid::read(pid_receiver).unwrap()
         }
         ForkResult::Child => {
             setsid().unwrap();
@@ -107,10 +109,10 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
                     // Let's send that to the client so that our short existence will have some meaning.
                     pid_file.drop_without_unlocking();
 
-                    pipe::create_client_event_pipe().unwrap();
+                    let server_pid = Pid::try_from(server_pid.as_raw()).unwrap();
 
-                    let server_pid = Pid::from(u32::try_from(server_pid.as_raw()).unwrap());
-                    server_pid.write_to(pid_sender).unwrap();
+                    CommandPipe::create(server_pid).unwrap();
+                    pid::write(server_pid, pid_sender).unwrap();
 
                     exit(0);
                 }
@@ -122,7 +124,8 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
 
                     run();
 
-                    unreachable!();
+                    unsafe { ManuallyDrop::drop(&mut ManuallyDrop::new(pid_file)) };
+                    exit(0)
                 }
             }
         }
@@ -131,11 +134,20 @@ fn spawn_server_daemon(mut pid_file: PidFile) -> Pid {
 
 /// Runs the server.
 pub fn run() {
-    let reader = serialize::read_message(&*pipe::CLIENT_EVENT, ReaderOptions::new()).unwrap();
-    let command_reader = TypedReader::<_, proto::command::Owned>::new(reader);
+    let mut cmd_pipe = CommandPipe::open_read_end();
 
-    let command = command_reader.get().unwrap();
-    debug!("Received command with message {:?}", command.get_msg());
+    loop {
+        match cmd_pipe.read_cmd() {
+            Ok((pid, cmd)) => command::handle(pid, cmd),
+            Err(err) => match err.kind {
+                capnp::ErrorKind::PrematureEndOfFile => cmd_pipe = CommandPipe::open_read_end(),
+                err => {
+                    cmd_pipe.destroy();
+                    panic!("{:?}", err)
+                }
+            },
+        }
+    }
 
     // let (cols, rows) = termion::terminal_size().unwrap();
 

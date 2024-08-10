@@ -7,23 +7,16 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+	"syscall"
 
 	"capnproto.org/go/capnp/v3"
 	"github.com/jameseidson/brutus/common/proto"
 )
 
+var Pid = sync.OnceValue[int](syscall.Getpid)
+
 var RuntimeDir = sync.OnceValue[string](func() string {
 	return filepath.Join("/var/run/user", strconv.Itoa(os.Geteuid()), "brutus")
-})
-
-var EventPipe = sync.OnceValue[*os.File](func() *os.File {
-	slog.Debug("opening fifo in client")
-	path := filepath.Join(RuntimeDir(), "client.event")
-	pipe, err := os.OpenFile(path, os.O_WRONLY, os.ModeNamedPipe)
-	if err != nil {
-		panic(err)
-	}
-	return pipe
 })
 
 var Log = sync.OnceValue[*slog.Logger](func() (logger *slog.Logger) {
@@ -31,30 +24,39 @@ var Log = sync.OnceValue[*slog.Logger](func() (logger *slog.Logger) {
 	return
 })
 
-func testCommand() (cmd proto.Command) {
+func testCommand() proto.Command {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		panic(err)
 	}
 
-	cmd, err = proto.NewRootCommand(seg)
+	cmd, err := proto.NewRootCommand(seg)
 	if err != nil {
 		panic(err)
 	}
 
-	cmd.SetMsg("Hello from client :)")
+	cmd.SetPid(uint32(Pid()))
+	cmd.SetConnect()
 
-	return
+	return cmd
 }
 
 //export RunClient
-func RunClient(server_pid uint32) {
+func RunClient(serverPid uint32) {
+	slog.Debug("opening fifo in client")
+	path := filepath.Join(RuntimeDir(), strconv.FormatUint(uint64(serverPid), 10)+".cmd")
+	cmdPipe, err := os.OpenFile(path, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		panic(err)
+	}
+
 	Log().Info("hello from brutus client")
 
-	Log().Info("the server's pid is", "pid", server_pid)
+	Log().Info("the server's pid is", "pid", serverPid)
+	Log().Info("my pid is", "pid", Pid())
 
-	encoder := capnp.NewEncoder(EventPipe())
-	err := encoder.Encode(testCommand().Message())
+	encoder := capnp.NewEncoder(cmdPipe)
+	err = encoder.Encode(testCommand().Message())
 	if err != nil {
 		panic(err)
 	}
