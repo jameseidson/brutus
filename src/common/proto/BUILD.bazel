@@ -1,12 +1,18 @@
 filegroup(
     name = "proto",
-    srcs = glob(["**/*.capnp"]),
+    srcs = ["proto.capnp"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "proto-root",
-    srcs = ["proto.capnp"],
+    name = "command",
+    srcs = ["command.capnp"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "event",
+    srcs = ["event.capnp"],
     visibility = ["//visibility:public"],
 )
 

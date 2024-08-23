@@ -2,7 +2,8 @@ use capnp::{
     message::{ReaderOptions, TypedReader},
     serialize,
 };
-use log::{debug, error};
+use log::debug;
+use nix::{sys::stat, unistd::mkfifo};
 use std::{
     fs::{remove_file, File, OpenOptions},
     io,
@@ -10,21 +11,20 @@ use std::{
     sync::LazyLock,
 };
 
-use nix::{sys::stat, unistd::mkfifo};
-
 use crate::{
     ipc::pid::{self, Pid},
-    proto::{self},
     util::filter_err,
 };
+
+pub use crate::interchange::proto::command as proto;
 
 static PIPE_PATH: LazyLock<PathBuf> =
     LazyLock::new(|| crate::RUNTIME_DIR.join(format!("{}.cmd", pid::get_mine())));
 
-pub fn handle(pid: Pid, cmd: proto::command::Which) {
+pub fn handle(pid: Pid, cmd: proto::Which) {
     match cmd {
-        proto::command::Connect(()) => debug!("connect client {:?}", pid),
-        proto::command::Empty(()) => unreachable!(),
+        proto::Connect(()) => debug!("connect client {:?}", pid),
+        proto::Empty(()) => unreachable!(),
     }
 }
 
@@ -60,8 +60,8 @@ impl CommandPipe {
         }
     }
 
-    pub fn read_cmd(&self) -> Result<(Pid, proto::command::Which), capnp::Error> {
-        let reader = TypedReader::<_, proto::command::Owned>::new(serialize::read_message(
+    pub fn read_cmd(&self) -> Result<(Pid, proto::Which), capnp::Error> {
+        let reader = TypedReader::<_, proto::Owned>::new(serialize::read_message(
             &self.pipe,
             ReaderOptions::default(),
         )?);

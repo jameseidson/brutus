@@ -21,20 +21,17 @@ use std::{
     sync::LazyLock,
 };
 
-use command::CommandPipe;
+use interchange::command::{self, CommandPipe};
 use ipc::{
     pid::{self, Pid, PidFile, SingletonProcessHandle},
     pipe,
 };
 use util::filter_err;
 
-pub(crate) mod command;
+pub(crate) mod interchange;
 pub(crate) mod ipc;
-pub(crate) mod util;
-pub(crate) mod proto {
-    include!(env!("BAZEL_RUST_PROTO_MODULE"));
-}
 pub(crate) mod ui;
+pub(crate) mod util;
 
 pub static PROCESS_NAME: &str = "brutusd";
 

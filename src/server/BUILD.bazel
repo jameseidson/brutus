@@ -6,7 +6,8 @@ rust_static_library(
     name = "server",
     srcs = glob(["src/**/*.rs"]),
     rustc_env = {
-        "BAZEL_RUST_PROTO_MODULE": "$(execpath :proto)/proto_capnp.rs",
+        "BAZEL_PROTO_COMMAND_MODULE": "$(execpath :proto)/command_capnp.rs",
+        "BAZEL_PROTO_EVENT_MODULE": "$(execpath :proto)/event_capnp.rs",
     },
     visibility = ["//visibility:public"],
     deps = all_crate_deps() + [":proto"],
@@ -17,16 +18,16 @@ cargo_build_script(
     srcs = ["build.rs"],
     build_script_env = {
         "BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)",
+        "BAZEL_PROTO_COMMAND_SRC": "$(execpath //src/common/proto:command)",
+        "BAZEL_PROTO_EVENT_SRC": "$(execpath //src/common/proto:event)",
         "BAZEL_PROTO_GO_INCLUDE_PATH": "$(execpath @org_capnproto_go_capnp_v3//:std)",
-        "BAZEL_PROTO_ROOT_SRC": "$(execpath //src/common/proto:proto-root)",
-        "BAZEL_PROTO_SRCS": "$(execpaths //src/common/proto)",
     } | select({
         "//src/common/proto:use-system-capnp": {"BAZEL_CAPNP_COMPILER_PATH": "capnp"},
         "//conditions:default": {"BAZEL_CAPNP_COMPILER_PATH": "$(execpath @capnproto-cpp-1.0.2//:compiler)"},
     }),
     data = [
-        "//src/common/proto",
-        "//src/common/proto:proto-root",
+        "//src/common/proto:event",
+        "//src/common/proto:command",
         "@org_capnproto_go_capnp_v3//:std",
     ] + select({
         "//src/common/proto:use-system-capnp": [],
