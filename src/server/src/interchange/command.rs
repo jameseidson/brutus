@@ -2,7 +2,6 @@ use capnp::{
     message::{ReaderOptions, TypedReader},
     serialize,
 };
-use log::debug;
 use nix::{sys::stat, unistd::mkfifo};
 use std::{
     fs::{remove_file, File, OpenOptions},
@@ -21,19 +20,10 @@ pub use crate::interchange::proto::command as proto;
 static PIPE_PATH: LazyLock<PathBuf> =
     LazyLock::new(|| crate::RUNTIME_DIR.join(format!("{}.cmd", pid::get_mine())));
 
-pub fn handle(pid: Pid, cmd: proto::Which) {
-    match cmd {
-        proto::Connect(()) => debug!("connect client {:?}", pid),
-        proto::Empty(()) => unreachable!(),
-    }
-}
+pub struct CommandReader(File);
 
-pub struct CommandPipe {
-    pipe: File,
-}
-
-impl CommandPipe {
-    /// Create the command pipe. This must be called before the client starts so that it
+impl CommandReader {
+    /// Create the command reader. This must be called before the client starts so that it
     /// can open the write end.
     pub fn create(server_pid: Pid) -> io::Result<()> {
         filter_err(
@@ -49,20 +39,21 @@ impl CommandPipe {
     }
 
     /// Open the read end of the pipe. This blocks until the client opens the write end.
-    pub fn open_read_end() -> Self {
-        CommandPipe {
-            pipe: OpenOptions::new()
+    pub fn open() -> Self {
+        CommandReader(
+            OpenOptions::new()
                 .read(true)
                 .write(false)
                 .create(false)
                 .open(PIPE_PATH.as_path())
                 .unwrap(),
-        }
+        )
     }
 
-    pub fn read_cmd(&self) -> Result<(Pid, proto::Which), capnp::Error> {
+    /// Blocks until a command is issued by the client, then returns it.
+    pub fn get_command(&self) -> Result<(Pid, proto::Which), capnp::Error> {
         let reader = TypedReader::<_, proto::Owned>::new(serialize::read_message(
-            &self.pipe,
+            &self.0,
             ReaderOptions::default(),
         )?);
         let cmd = reader.get().unwrap();
