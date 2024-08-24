@@ -1,10 +1,4 @@
 filegroup(
-    name = "proto",
-    srcs = ["proto.capnp"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
     name = "command",
     srcs = ["command.capnp"],
     visibility = ["//visibility:public"],

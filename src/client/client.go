@@ -24,7 +24,7 @@ var RuntimeDir = sync.OnceValue[string](func() string {
 	return filepath.Join("/var/run/user", strconv.Itoa(os.Geteuid()), "brutus")
 })
 
-func connectCmd() proto.Command {
+func newCmd() proto.Command {
 	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		panic(err)
@@ -36,6 +36,12 @@ func connectCmd() proto.Command {
 	}
 
 	cmd.SetPid(uint32(Pid()))
+
+	return cmd
+}
+
+func connectCmd() proto.Command {
+	cmd := newCmd()
 	cmd.SetConnect()
 
 	return cmd

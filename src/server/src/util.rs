@@ -1,4 +1,8 @@
+use std::{fs::File, path::PathBuf};
+
+use log::LevelFilter;
 use nix::pty::Winsize;
+use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 
 pub struct TermSize {
     pub rows: u16,
@@ -26,4 +30,22 @@ where
         Err(err) if predicate(&err) => Ok(()),
         Err(err) => Err(err),
     }
+}
+
+pub fn init_logging() {
+    CombinedLogger::init(vec![
+        WriteLogger::new(
+            LevelFilter::Trace,
+            Config::default(),
+            File::create(PathBuf::from("/tmp").join(crate::PROCESS_NAME).as_path()).unwrap(),
+        ),
+        TermLogger::new(
+            LevelFilter::Trace,
+            Config::default(),
+            TerminalMode::Stderr,
+            ColorChoice::Auto,
+        ),
+    ])
+    .unwrap();
+    log_panics::init();
 }

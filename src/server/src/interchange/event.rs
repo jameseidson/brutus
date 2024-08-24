@@ -1,8 +1,5 @@
 use capnp::{self, message::TypedBuilder};
-use std::{
-    fs::{File, OpenOptions},
-    sync::LazyLock,
-};
+use std::fs::{File, OpenOptions};
 
 use crate::pid::Pid;
 

@@ -12,7 +12,7 @@ use std::{
 
 use crate::{
     ipc::pid::{self, Pid},
-    util::filter_err,
+    util,
 };
 
 pub use crate::interchange::proto::command as proto;
@@ -26,7 +26,7 @@ impl CommandReader {
     /// Create the command reader. This must be called before the client starts so that it
     /// can open the write end.
     pub fn create(server_pid: Pid) -> io::Result<()> {
-        filter_err(
+        util::filter_err(
             mkfifo(
                 crate::RUNTIME_DIR
                     .join(format!("{}.cmd", server_pid))

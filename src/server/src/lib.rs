@@ -5,18 +5,9 @@ use nix::{
     sys::prctl::set_name,
     unistd::{fork, geteuid, setsid, ForkResult},
 };
-use simplelog::{
-    ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,
-};
 use std::{
-    collections::HashMap,
-    ffi::CString,
-    fs::{create_dir, File},
-    io::ErrorKind,
-    mem::ManuallyDrop,
-    path::PathBuf,
-    process::exit,
-    sync::LazyLock,
+    collections::HashMap, ffi::CString, fs::create_dir, io::ErrorKind, mem::ManuallyDrop,
+    path::PathBuf, process::exit, sync::LazyLock,
 };
 
 use interchange::{
@@ -24,11 +15,10 @@ use interchange::{
     event::{self, EventWriter},
 };
 use ipc::pid::{self, Pid, PidFile, SingletonProcessHandle};
-use util::filter_err;
 
 pub(crate) mod interchange;
 pub(crate) mod ipc;
-pub(crate) mod ui;
+pub(crate) mod state;
 pub(crate) mod util;
 
 pub static PROCESS_NAME: &str = "brutusd";
@@ -38,7 +28,7 @@ pub(crate) static RUNTIME_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         .join(geteuid().to_string())
         .join("brutus");
 
-    filter_err(create_dir(dir.as_path()), |err| {
+    util::filter_err(create_dir(dir.as_path()), |err| {
         err.kind() == ErrorKind::AlreadyExists
     })
     .unwrap();
@@ -48,21 +38,7 @@ pub(crate) static RUNTIME_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
 
 #[no_mangle]
 pub extern "C" fn spawn_server_if_not_running() -> Pid {
-    CombinedLogger::init(vec![
-        WriteLogger::new(
-            LevelFilter::Trace,
-            Config::default(),
-            File::create(PathBuf::from("/tmp").join(PROCESS_NAME).as_path()).unwrap(),
-        ),
-        TermLogger::new(
-            LevelFilter::Trace,
-            Config::default(),
-            TerminalMode::Stderr,
-            ColorChoice::Auto,
-        ),
-    ])
-    .unwrap();
-    log_panics::init();
+    util::init_logging();
 
     match SingletonProcessHandle::new(String::from(PROCESS_NAME)).unwrap() {
         SingletonProcessHandle::TheSingleton(pid_file) => {
