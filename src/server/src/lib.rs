@@ -16,6 +16,7 @@ use interchange::{
 };
 use ipc::pid::{self, Pid, PidFile, SingletonProcessHandle};
 
+pub(crate) mod ffi;
 pub(crate) mod interchange;
 pub(crate) mod ipc;
 pub(crate) mod state;

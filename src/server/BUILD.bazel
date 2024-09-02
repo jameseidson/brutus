@@ -10,7 +10,7 @@ rust_static_library(
         "BAZEL_PROTO_EVENT_MODULE": "$(execpath :proto)/event_capnp.rs",
     },
     visibility = ["//visibility:public"],
-    deps = all_crate_deps() + [":proto"],
+    deps = all_crate_deps() + [":proto", "//src/common/ipc"],
 )
 
 cargo_build_script(
